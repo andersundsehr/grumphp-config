@@ -1,0 +1,37 @@
+{
+  "name": "andersundsehr/rector-p",
+  "description": "rector run file by file (like git add -p)",
+  "license": "GPL-2.0-or-later",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Matthias Vogel",
+      "email": "m.vogel@andersundsehr.com"
+    }
+  ],
+  "require": {
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "rector/rector": "^1.2.2",
+    "symfony/console": "^5.4 || ^6.4 || ^7.1"
+  },
+  "require-dev": {
+    "pluswerk/grumphp-config": "^7.0.4",
+    "roave/security-advisories": "dev-latest"
+  },
+  "autoload": {
+    "psr-4": {
+      "Andersundsehr\\RectorP\\": "src/"
+    }
+  },
+  "bin": [
+    "rector-p"
+  ],
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true
+    }
+  }
+}
