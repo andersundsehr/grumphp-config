@@ -14,12 +14,33 @@
     "issues": "https://github.com/pluswerk/grumphp-bom-task/issues"
   },
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
     "phpro/grumphp": "^2.0.0"
   },
   "require-dev": {
-    "pluswerk/grumphp-config": "^6.8.0"
+    "andersundsehr/phpstan-git-files": "@dev",
+    "andersundsehr/rector-p": "@dev",
+    "pluswerk/grumphp-config": "@dev",
+    "pluswerk/grumphp-xliff-task": "@dev"
   },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../",
+      "options": {
+        "symlink": false,
+        "reference": "none"
+      }
+    },
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "reference": "none",
+        "relative": false
+      }
+    }
+  ],
   "autoload": {
     "psr-4": {
       "PLUS\\GrumPHPBomTask\\": "src/"
@@ -38,7 +59,14 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-main": "8.0.x-dev"
+      "dev-main": "10.0.x-dev"
     }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer bump -D",
+      "composer normalize",
+      "rm -rf vendor/pluswerk/grumphp-config/vendor vendor/pluswerk/grumphp-config/packages"
+    ]
   }
 }

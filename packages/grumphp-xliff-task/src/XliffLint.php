@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PLUS\GrumPHPXliffTask;
 
 use GrumPHP\Exception\RuntimeException;
-use GrumPHP\Linter\LinterInterface;
 use GrumPHP\Runner\TaskResult;
 use GrumPHP\Runner\TaskResultInterface;
 use GrumPHP\Task\AbstractLinterTask;
@@ -13,7 +12,6 @@ use GrumPHP\Task\Config\ConfigOptionsResolver;
 use GrumPHP\Task\Context\ContextInterface;
 use GrumPHP\Task\Context\GitPreCommitContext;
 use GrumPHP\Task\Context\RunContext;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * @extends AbstractLinterTask<XliffLinter>

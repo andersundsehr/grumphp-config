@@ -5,23 +5,13 @@ declare(strict_types=1);
 namespace PLUS\GrumPHPConfig\Composer;
 
 use Composer\Composer;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\InstalledVersions;
-use Composer\Installer\PackageEvent;
-use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Composer\Script\Event;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\VersionParser;
-use Exception;
-use GrumPHP\Configuration\Configuration;
 use PLUS\GrumPHPConfig\VersionUtility;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Yaml;
 
 final class Plugin implements PluginInterface, EventSubscriberInterface
@@ -199,7 +189,7 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
     // HELPER:
 
-    private function message(string $message, string $color = null): void
+    private function message(string $message, ?string $color = null): void
     {
         $colorStart = '';
         $colorEnd = '';

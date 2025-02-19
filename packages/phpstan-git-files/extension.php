@@ -17,9 +17,10 @@ BASH;
     // add directory, We add this so the cache is not ignored. see https://github.com/andersundsehr/phpstan-git-files/issues/3
     array_unshift($absoluteFiles, $deepestDirectory);
 
+    # use git root if phpstan is installed/run in a subdirectory
     $command = <<<BASH
-    git status --ignored --porcelain {$deepestDirectory} | awk -v cwd="$(pwd)" '/^!!/ {print cwd "/" $2}'
-BASH;
+    git status --ignored --porcelain {$deepestDirectory} | grep '^!!' | awk -v prefix="$(git rev-parse --show-toplevel)" '{print prefix "/" $2}'
+    BASH;
     $absoluteIgnoredFiles = $exec($command);
 
     return [

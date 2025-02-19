@@ -7,11 +7,11 @@ namespace Andersundsehr\RectorP\Dto;
 use Stringable;
 use InvalidArgumentException;
 
-final class ChunkConfig implements Stringable
+final readonly class ChunkConfig implements Stringable
 {
     public function __construct(
-        public readonly int $chunkNumber = 1,
-        public readonly int $totalChunks = 1,
+        public int $chunkNumber = 1,
+        public int $totalChunks = 1,
     ) {
         if ($this->totalChunks < 1) {
             throw new InvalidArgumentException('totalChunks must be greater than 0 give:' . $this);

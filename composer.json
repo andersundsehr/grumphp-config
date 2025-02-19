@@ -17,36 +17,40 @@
     "issues": "https://github.com/pluswerk/grumphp-config/issues"
   },
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
     "composer-plugin-api": "^2.1.0",
-    "andersundsehr/phpstan-git-files": "^1.0.2",
-    "andersundsehr/rector-p": "^1.0",
-    "composer/semver": "^3.3.0",
-    "enlightn/security-checker": "^1.10.0 || ^2",
-    "ergebnis/composer-normalize": "^2.31",
-    "kcs/psr-phpstan-rules": "^1.1",
-    "php-parallel-lint/php-parallel-lint": "^1.3.2",
-    "phpro/grumphp": "^2",
-    "phpstan/extension-installer": "^1.2",
-    "phpstan/phpstan": "^1.9.0",
-    "pluswerk/grumphp-bom-task": "^8.0.0",
-    "pluswerk/grumphp-xliff-task": "^6.0.0",
-    "rector/rector": "^1.2.2",
-    "squizlabs/php_codesniffer": "^3.7.1",
-    "symfony/yaml": "^5.4.0 || ^6.0 || ^7.0"
+    "andersundsehr/phpstan-git-files": "^10.0.0",
+    "andersundsehr/rector-p": "^10.0.0",
+    "composer/semver": "^3.4.3",
+    "enlightn/security-checker": "^1.10.0 || ^2.0.0",
+    "ergebnis/composer-normalize": "^2.45.0",
+    "kcs/psr-phpstan-rules": "^1.1.0",
+    "php-parallel-lint/php-parallel-lint": "^1.4.0",
+    "phpro/grumphp": "^2.10.0",
+    "phpstan/extension-installer": "^1.4.3",
+    "phpstan/phpstan": "^2.1.5",
+    "pluswerk/grumphp-bom-task": "^10.0.0",
+    "pluswerk/grumphp-xliff-task": "^10.0.0",
+    "rector/rector": "^2.0.9",
+    "squizlabs/php_codesniffer": "^3.11.3",
+    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.0.0"
   },
   "require-dev": {
-    "composer/composer": "^2.7.7",
-    "pluswerk/grumphp-bom-task": "dev-main as 8.99.99",
-    "pluswerk/grumphp-xliff-task": "dev-main as 6.99.99",
-    "roave/security-advisories": "dev-latest"
+    "andersundsehr/phpstan-git-files": "dev-main as 10.0.0",
+    "andersundsehr/rector-p": "dev-main as 10.0.0",
+    "composer/composer": "^2.8.5",
+    "pluswerk/grumphp-bom-task": "dev-main as 10.0.0",
+    "pluswerk/grumphp-xliff-task": "dev-main as 10.0.0",
+    "roave/security-advisories": "dev-latest",
+    "symfony/var-dumper": "^5.4.0 || ^6.4.18 || ^7.0.0"
   },
   "repositories": [
     {
       "type": "path",
       "url": "packages/*",
       "options": {
-        "reference": "none"
+        "reference": "none",
+        "relative": false
       }
     }
   ],
@@ -75,7 +79,7 @@
     "class": "PLUS\\GrumPHPConfig\\Composer\\Plugin"
   },
   "require-typo3": {
-    "saschaegerer/phpstan-typo3": "^1.10.0",
-    "ssch/typo3-rector": "^2.5.0"
+    "saschaegerer/phpstan-typo3": "^2.0.0",
+    "ssch/typo3-rector": "^3.1.0"
   }
 }

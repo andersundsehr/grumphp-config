@@ -10,14 +10,34 @@
     }
   ],
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
-    "rector/rector": "^1.2.2",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+    "rector/rector": "^2.0.9",
     "symfony/console": "^5.4 || ^6.4 || ^7.1"
   },
   "require-dev": {
-    "pluswerk/grumphp-config": "^7.0.4",
-    "roave/security-advisories": "dev-latest"
+    "andersundsehr/phpstan-git-files": "@dev",
+    "pluswerk/grumphp-bom-task": "@dev",
+    "pluswerk/grumphp-config": "@dev",
+    "pluswerk/grumphp-xliff-task": "@dev"
   },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../",
+      "options": {
+        "symlink": false,
+        "reference": "none"
+      }
+    },
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "reference": "none",
+        "relative": false
+      }
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Andersundsehr\\RectorP\\": "src/"
@@ -33,5 +53,17 @@
       "phpstan/extension-installer": true,
       "pluswerk/grumphp-config": true
     }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "10.0-dev"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer bump -D",
+      "composer normalize",
+      "rm -rf vendor/pluswerk/grumphp-config/vendor vendor/pluswerk/grumphp-config/packages"
+    ]
   }
 }

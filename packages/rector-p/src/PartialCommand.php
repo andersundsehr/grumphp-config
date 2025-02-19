@@ -10,13 +10,10 @@ use Andersundsehr\RectorP\Helper\TimeHelper;
 use InvalidArgumentException;
 use Rector\Bootstrap\RectorConfigsResolver;
 use Rector\Config\RectorConfig;
-use Rector\Configuration\ConfigInitializer;
-use Rector\Configuration\ConfigurationFactory;
 use Rector\Configuration\Option;
 use Rector\Configuration\Parameter\SimpleParameterProvider;
 use Rector\DependencyInjection\RectorContainerFactory;
 use Rector\FileSystem\FilesFinder;
-use Rector\StaticReflection\DynamicSourceLocatorDecorator;
 use Rector\ValueObject\Configuration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -177,7 +174,7 @@ final class PartialCommand extends Command
     {
         $timeCountMax = count($chunkedFiles);
         $timeIndex = 0;
-        foreach (array_values($chunkedFiles) as $index => $file) {
+        foreach ($chunkedFiles as $index => $file) {
             if ($this->cache->isProcessed($file)) {
                 $timeCountMax--;
                 continue;

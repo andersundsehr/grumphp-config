@@ -1,0 +1,9 @@
+#!/bin/bash
+
+## Description: Exec anything in the same directory as on the host
+## Usage: here [flags] [args]
+## Example: "ddev here ls"
+## ExecRaw: true
+## HostWorkingDir: true
+
+bash -c "$*"
