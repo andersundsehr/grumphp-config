@@ -1,0 +1,40 @@
+{
+  "name": "andersundsehr/phpstan-git-files",
+  "description": "Add all git files into phpstan config automatically",
+  "license": "LGPL-3.0-or-later",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Matthias Vogel",
+      "email": "m.vogel@andersundsehr.com"
+    }
+  ],
+  "require": {
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+    "composer-plugin-api": "^2.1.0",
+    "phpstan/phpstan": "^1.9 || ^2.0"
+  },
+  "require-dev": {
+    "pluswerk/grumphp-config": "^7.1.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true
+    },
+    "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "1.0-dev"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer bump -D",
+      "composer normalize"
+    ]
+  }
+}

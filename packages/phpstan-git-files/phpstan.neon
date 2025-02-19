@@ -1,0 +1,5 @@
+includes:
+  - extension.php
+
+parameters:
+  level: max
