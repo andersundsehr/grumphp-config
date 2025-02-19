@@ -1,0 +1,11 @@
+services:
+  PLUS\GrumPHPXliffTask\XliffLinter:
+    class: PLUS\GrumPHPXliffTask\XliffLinter
+  PLUS\GrumPHPXliffTask\XliffLint:
+    class: PLUS\GrumPHPXliffTask\XliffLint
+    arguments:
+      - '@PLUS\GrumPHPXliffTask\XliffLinter'
+      - '@process_builder'
+      - '@formatter.raw_process'
+    tags:
+      - {name: grumphp.task, task: xlifflint}

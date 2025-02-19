@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2013-08-23T16:32:55Z"
+          product-name="extension">
+        <header/>
+        <body>
+            <trans-unit id="test.key">
+                <target>test</target>
+            </trans-unit>
+            <trans-unit id="test.key2">
+                <target>test</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
