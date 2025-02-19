@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+$currentScriptName = array_shift($argv); // remove the name of the current script
+if (empty($argv)) {
+    echo "use fixbom like this:" . PHP_EOL;
+    echo $currentScriptName . " file1 [file2 ...]" . PHP_EOL;
+}
+foreach ($argv as $execFile) {
+    if (!is_file($execFile)) {
+        echo "\e[1;33mfile not found '" . $execFile . "'\e[0m" . PHP_EOL;
+        continue;
+    }
+    $fileContent = file_get_contents($execFile);
+    $bom = pack('H*', 'EFBBBF');
+    $fileContentWithoutBom = preg_replace("/^$bom/", '', $fileContent);
+
+    if ($fileContentWithoutBom !== $fileContent) {
+        $fileGroup = filegroup($execFile);
+        $filePerm = fileperms($execFile) & 0777;
+        unlink($execFile);
+        file_put_contents($execFile, $fileContentWithoutBom);
+        chgrp($execFile, $fileGroup);
+        chmod($execFile, $filePerm);
+
+        echo "\033[0;32mBOM was removed from file '" . $execFile . "'\033[0m" . PHP_EOL;
+    }
+}
