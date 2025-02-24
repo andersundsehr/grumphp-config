@@ -4041,7 +4041,7 @@
                 "dev"
             ],
             "support": {
-                "issues": "https://github.com/pluswerk/grumphp-config/issues"
+                "issues": "https://github.com/andersundsehr/grumphp-config/issues"
             },
             "transport-options": {
                 "symlink": false,

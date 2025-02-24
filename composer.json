@@ -14,7 +14,7 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/pluswerk/grumphp-config/issues"
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues"
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0",

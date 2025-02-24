@@ -9,6 +9,10 @@
       "email": "m.vogel@andersundsehr.com"
     }
   ],
+  "support": {
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/phpstan-git-files",
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues"
+  },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
     "composer-plugin-api": "^2.1.0",

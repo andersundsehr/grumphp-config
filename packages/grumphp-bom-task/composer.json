@@ -11,7 +11,8 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/pluswerk/grumphp-bom-task/issues"
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task",
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues"
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
