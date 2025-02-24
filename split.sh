@@ -53,12 +53,12 @@ for package in $packages ; do
   # if there is nothing to commit we can skip the commit and push
   if [ -z "$(git -C tmp/${package}/ status --porcelain)" ]; then
     # color yellow
-    printToSummary "🟡 Nothing to commit for \`${package}\`"
+    printToSummary "🟡 Nothing to commit for \`${package}\` https://github.com/andersundsehr/${package}"
   else
   git -C tmp/${package}/ commit -m "${commitMessage}"
 
   git -C tmp/${package}/ push --follow-tags
-    printToSummary "✅ Pushed to remote \`${package}\`"
+    printToSummary "✅ Pushed to remote \`${package}\` https://github.com/andersundsehr/${package}"
   fi
 
   currentMonoRepoTag=$(git tag --points-at HEAD)
@@ -68,12 +68,12 @@ for package in $packages ; do
     commitHash=$(git -C tmp/${package}/ rev-parse HEAD)
     if [ ! -z "$packageCommitTag" ]; then
       commit=$(git -C tmp/${package}/ rev-parse HEAD)
-      printToSummary "🦘 skip tag \`${currentMonoRepoTag}\` for \`${package}\` as the current package commit \`${commitHash}\` already has the tag \`${packageCommitTag}\`"
+      printToSummary "🦘 skip tag \`${currentMonoRepoTag}\` for \`${package}\` as the current package commit \`${commitHash}\` already has the tag \`${packageCommitTag}\` https://github.com/andersundsehr/${package}/releases/tag/${packageCommitTag}"
     else
       git -C tmp/${package}/ tag -e -f -a $currentMonoRepoTag -m "See more at https://github.com/andersundsehr/grumphp-config/releases/tag/${currentMonoRepoTag}" --no-edit
       git -C tmp/${package}/ push --tags
       GH_REPO=andersundsehr/${package} gh release create $currentMonoRepoTag --notes-from-tag --verify-tag
-      printToSummary "✅ Published \`${package}:${currentMonoRepoTag}\`"
+      printToSummary "✅ Published \`${package}:${currentMonoRepoTag}\` https://github.com/andersundsehr/${package}/releases/tag/${currentMonoRepoTag}"
     fi
   fi
 done

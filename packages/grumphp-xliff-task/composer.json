@@ -11,8 +11,8 @@
     }
   ],
   "support": {
-    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-xliff-task",
-    "issues": "https://github.com/andersundsehr/grumphp-config/issues"
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues",
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-xliff-task"
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0",

@@ -18,7 +18,7 @@ for dir in $directories
 do
     cd $dir
     echo -e "\033[0;31m"
-    echo -e "\n\n           Running grumphp in $(basename pwd)\n\n"
+    echo -e "\n\n\n           Running grumphp in $(basename $(pwd))\n\n\n"
     echo -e "\033[0m"
     # mirroring of composer takes to long so we use rsync instead of deleting the vendor folder
     rsync -az --exclude=packages --exclude=vendor $CWD/ vendor/pluswerk/grumphp-config/
@@ -32,7 +32,7 @@ done
 
 cd $CWD
 echo -e "\033[0;31m"
-echo -e "\n\n           Running grumphp in $(basename pwd)\n\n"
+echo -e "\n\n\n           Running grumphp in ROOT\n\n\n"
 echo -e "\033[0m"
 composer update
 vendor/bin/grumphp run

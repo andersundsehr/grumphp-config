@@ -3,12 +3,14 @@ name: grumphp
 on:
   push:
     branches: "*"
+    tags: "*"
   schedule:
     - cron: '0 0 * * *'
 
 jobs:
   test:
     name: "php: ${{ matrix.php }} TYPO3: ${{ matrix.typo3 }}"
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -29,8 +31,10 @@ jobs:
       - if: ${{ matrix.typo3 }}
         run: composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts -n
       - run: ./vendor/bin/grumphp run --ansi
+
   test-packages:
     name: "${{ matrix.package }} php: ${{ matrix.php }}"
+    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,3 +53,22 @@ jobs:
       - run: git config --global --add safe.directory /__w/grumphp-config/grumphp-config
       - run: composer install --no-progress --no-scripts -n
       - run: ./vendor/bin/grumphp run --ansi
+
+  code-split:
+    name: "Code Split ${{ matrix.package }}"
+    needs:
+      - test
+      - test-packages
+    # TODO remove all-merged:
+    if: ${{ ( startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/all-merged' ) && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    environment: code split
+    env:
+      GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./split.sh ${{ matrix.package }}
