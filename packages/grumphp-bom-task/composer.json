@@ -1,0 +1,73 @@
+{
+  "name": "pluswerk/grumphp-bom-task",
+  "description": "Force files to have no BOM",
+  "license": "LGPL-3.0-or-later",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Matthias Vogel",
+      "email": "m.vogel@andersundsehr.com",
+      "homepage": "https://www.andersundsehr.com"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues",
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task"
+  },
+  "require": {
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+    "phpro/grumphp": "^2.0.0"
+  },
+  "require-dev": {
+    "andersundsehr/phpstan-git-files": "@dev",
+    "andersundsehr/rector-p": "@dev",
+    "pluswerk/grumphp-config": "@dev",
+    "pluswerk/grumphp-xliff-task": "@dev"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../",
+      "options": {
+        "symlink": false,
+        "reference": "none"
+      }
+    },
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "reference": "none",
+        "relative": false
+      }
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "PLUS\\GrumPHPBomTask\\": "src/"
+    }
+  },
+  "bin": [
+    "bin/fixbom"
+  ],
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "10.0.x-dev"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer bump -D",
+      "composer normalize",
+      "rm -rf vendor/pluswerk/grumphp-config/vendor vendor/pluswerk/grumphp-config/packages"
+    ]
+  }
+}

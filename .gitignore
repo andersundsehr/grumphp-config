@@ -4,6 +4,4 @@
 .idea
 var
 public/
-packages/*
-!packages/.gitkeep
-
+.env

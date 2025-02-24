@@ -1,0 +1,8 @@
+services:
+  PLUS\GrumPHPBomTask\BomFixerTask:
+    class: PLUS\GrumPHPBomTask\BomFixerTask
+    arguments:
+      - '@process_builder'
+      - '@formatter.raw_process'
+    tags:
+      - {name: grumphp.task, task: plus_bom_fixer}

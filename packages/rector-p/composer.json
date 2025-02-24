@@ -1,0 +1,73 @@
+{
+  "name": "andersundsehr/rector-p",
+  "description": "rector run file by file (like git add -p)",
+  "license": "GPL-2.0-or-later",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Matthias Vogel",
+      "email": "m.vogel@andersundsehr.com"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/andersundsehr/grumphp-config/issues",
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/rector-p"
+  },
+  "require": {
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+    "rector/rector": "^2.0.9",
+    "symfony/console": "^5.4 || ^6.4 || ^7.1"
+  },
+  "require-dev": {
+    "andersundsehr/phpstan-git-files": "@dev",
+    "pluswerk/grumphp-bom-task": "@dev",
+    "pluswerk/grumphp-config": "@dev",
+    "pluswerk/grumphp-xliff-task": "@dev"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../",
+      "options": {
+        "symlink": false,
+        "reference": "none"
+      }
+    },
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "reference": "none",
+        "relative": false
+      }
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Andersundsehr\\RectorP\\": "src/"
+    }
+  },
+  "bin": [
+    "rector-p"
+  ],
+  "config": {
+    "allow-plugins": {
+      "ergebnis/composer-normalize": true,
+      "phpro/grumphp": true,
+      "phpstan/extension-installer": true,
+      "pluswerk/grumphp-config": true
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "10.0-dev"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "composer bump -D",
+      "composer normalize",
+      "rm -rf vendor/pluswerk/grumphp-config/vendor vendor/pluswerk/grumphp-config/packages"
+    ]
+  }
+}

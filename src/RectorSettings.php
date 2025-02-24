@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PLUS\GrumPHPConfig;
 
 use Composer\InstalledVersions;
+use InvalidArgumentException;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
@@ -12,6 +13,8 @@ use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector
 use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Php70\Rector\Assign\ListSwapArrayOrderRector;
+use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
+use Rector\PostRector\Rector\NameImportingPostRector;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
@@ -20,13 +23,39 @@ use Rector\Strict\Rector\If_\BooleanInIfConditionRuleFixerRector;
 use Rector\Strict\Rector\Ternary\BooleanInTernaryOperatorRuleFixerRector;
 use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
-use Ssch\TYPO3Rector\CodeQuality\General\RenameClassMapAliasRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
-use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
+
+use function array_filter;
+use function putenv;
 
 final class RectorSettings
 {
+    public static function getLevel(int $level = 9999): int
+    {
+        if (isset($_ENV['RECTOR_CLI_OPTION_LEVEL'])) {
+            return (int)$_ENV['RECTOR_CLI_OPTION_LEVEL'];
+        }
+
+        foreach ($_SERVER['argv'] as $arg) {
+            if (str_starts_with((string)$arg, '--level=')) {
+                $cliLevel = (int)(substr((string)$arg, 8));
+                if ($cliLevel < 0) {
+                    throw new InvalidArgumentException('Level must be bigger than 0');
+                }
+
+                //filter out argument so rector does not complain
+                $_SERVER['argv'] = array_filter($_SERVER['argv'], fn($v): bool => $v !== $arg);
+                //set environment variable so it can be used in child runs
+                $_ENV['RECTOR_CLI_OPTION_LEVEL'] = $cliLevel;
+                putenv('RECTOR_CLI_OPTION_LEVEL=' . $cliLevel);
+                return $cliLevel;
+            }
+        }
+
+        return $level;
+    }
+
     /**
      * @return array<int,string>
      */
@@ -103,9 +132,8 @@ final class RectorSettings
         assert(is_string($setList));
         return [
             $setList,
-            __DIR__ . '/../rector-typo3-rule-set.php',
-           Typo3SetList::CODE_QUALITY,
-           Typo3SetList::GENERAL,
+            Typo3SetList::CODE_QUALITY,
+            Typo3SetList::GENERAL,
         ];
     }
 
@@ -114,7 +142,7 @@ final class RectorSettings
      */
     public static function skip(): array
     {
-        return array_filter([
+        return [
             /**
              * FROM: if($object) {
              * TO:   if($object !== null) {
@@ -182,11 +210,11 @@ final class RectorSettings
              * TO:   $ext !== '' && $ext !== '0' && $ext !== [] ? $ext : '';
              */
             BooleanInTernaryOperatorRuleFixerRector::class,
-        ]);
+        ];
     }
 
     /**
-     * @return array<int, string>
+     * @return array<int|string, list<string>|string>
      */
     public static function skipTypo3(): array
     {
@@ -196,13 +224,15 @@ final class RectorSettings
 
         return [
             /**
-             * not used:
-             */
-            RenameClassMapAliasRector::class,
-            /**
              * in combination with ConstantsToEnvironmentApiCallRector not the best rule
              */
             SensitiveConstantNameRector::class,
+
+            // @see https://github.com/sabbelasichon/typo3-rector/issues/2536
+            __DIR__ . '/**/Configuration/ExtensionBuilder/*',
+            NameImportingPostRector::class => [
+                'ClassAliasMap.php',
+            ],
         ];
     }
 }

@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+
+if (version_compare('8.1.0', PHP_VERSION, '>')) {
+  fwrite(STDERR, 'rector-p works only with php version >=8.1 your version is: ' . PHP_VERSION . PHP_EOL);
+  exit(1);
+}
+
+call_user_func(function () {
+
+  $possibleAutoloadFiles = [
+    // if defined use this:
+    $GLOBALS['_composer_autoload_path'] ?? '',
+    // php ./vendor/bin/rector-p
+    __DIR__ . '/../autoload.php',
+    // php ./bin/rector-p
+    __DIR__ . '/../vendor/autoload.php',
+    // php ./rector-p
+    __DIR__ . '/vendor/autoload.php',
+    // php ./vendor/andersundsehr/rector-p/rector-p may be symlinked from ./vendor/bin/rector-p
+    __DIR__ . '/../../autoload.php',
+  ];
+
+  $firstVendorAutoloadFile = null;
+
+  foreach ($possibleAutoloadFiles as $file) {
+    if (file_exists($file)) {
+      $firstVendorAutoloadFile = $file;
+      break;
+    }
+  }
+
+  if (!$firstVendorAutoloadFile) {
+    fwrite(STDERR, 'rector-p could not find any autoload file' . PHP_EOL);
+    exit(1);
+  }
+
+  require $firstVendorAutoloadFile;
+  \Andersundsehr\RectorP\RectorPApplication::createApplication()->run();
+});
