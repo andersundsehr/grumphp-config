@@ -1,6 +1,7 @@
 name: grumphp
 
 on:
+  workflow_dispatch:
   push:
     branches: "*"
     tags: "*"
