@@ -71,3 +71,9 @@ grumphp:
   extensions:
     - PLUS\GrumPHPBomTask\ExtensionLoader
     - PLUS\GrumPHPXliffTask\ExtensionLoader
+  git_hook_variables:
+    # $DDEV_EXEC will be empty or be the path to ddev exec, so it will work in ddev projects and other projects. :) and inside and outside the ddev container.
+    EXEC_GRUMPHP_COMMAND: "$DDEV_EXEC php"
+    ENV:
+      # DDEV_EXEC will be empty if no ddev is found or you are in the ddev container.
+      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && echo "$(which ddev)")'
