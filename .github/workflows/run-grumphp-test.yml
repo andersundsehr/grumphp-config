@@ -1,9 +1,10 @@
 name: grumphp
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches: "*"
-    tags: "*"
+  push:
   schedule:
     - cron: '0 0 * * *'
 

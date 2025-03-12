@@ -11,3 +11,9 @@ parameters:
 			identifier: instanceof.alwaysTrue
 			count: 3
 			path: packages/grumphp-xliff-task/src/XliffLinter.php
+
+		-
+			message: '#^Method Andersundsehr\\RectorP\\PartialCommand\:\:getAllFiles\(\) should return list\<string\> but returns array\<string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: packages/rector-p/src/PartialCommand.php
