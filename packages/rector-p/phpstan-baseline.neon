@@ -1,6 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Match expression does not handle remaining values\\: int\\<min, 15\\>\\|int\\<17, 31\\>\\|int\\<33, 63\\>\\|int\\<65, 127\\>\\|int\\<129, 255\\>\\|int\\<257, max\\>$#"
+			message: '#^Method Andersundsehr\\RectorP\\PartialCommand\:\:getAllFiles\(\) should return list\<string\> but returns array\<string\>\.$#'
+			identifier: return.type
 			count: 1
 			path: src/PartialCommand.php

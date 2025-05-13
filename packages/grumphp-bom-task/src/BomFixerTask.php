@@ -35,7 +35,7 @@ final class BomFixerTask implements TaskInterface
         );
 
         $resolver->addAllowedTypes('triggered_by', ['array']);
-        return ConfigOptionsResolver::fromOptionsResolver($resolver);
+        return ConfigOptionsResolver::fromClosure($resolver->resolve(...));
     }
 
     public function getConfig(): TaskConfigInterface

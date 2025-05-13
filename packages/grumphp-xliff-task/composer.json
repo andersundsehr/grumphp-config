@@ -30,8 +30,8 @@
       "type": "path",
       "url": "../../",
       "options": {
-        "symlink": false,
-        "reference": "none"
+        "reference": "none",
+        "symlink": false
       }
     },
     {
