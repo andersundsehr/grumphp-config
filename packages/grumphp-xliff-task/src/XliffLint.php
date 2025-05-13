@@ -38,7 +38,7 @@ final class XliffLint extends AbstractLinterTask
         $resolver->addAllowedTypes('dtd_validation', ['bool']);
         $resolver->addAllowedTypes('scheme_validation', ['bool']);
         $resolver->addAllowedTypes('triggered_by', ['array']);
-        return ConfigOptionsResolver::fromOptionsResolver($resolver);
+        return ConfigOptionsResolver::fromClosure($resolver->resolve(...));
     }
 
     public function canRunInContext(ContextInterface $context): bool
