@@ -6,10 +6,13 @@ namespace PLUS\GrumPHPXliffTask;
 
 use DOMDocument;
 use DOMElement;
+use DOMNamedNodeMap;
 use GrumPHP\Collection\LintErrorsCollection;
 use GrumPHP\Linter\LintError;
 use GrumPHP\Linter\Xml\XmlLinter;
 use SplFileInfo;
+
+use function assert;
 
 final class XliffLinter extends XmlLinter
 {
@@ -38,7 +41,9 @@ final class XliffLinter extends XmlLinter
         $fileTags = $rootElement->getElementsByTagName('file');
         foreach ($fileTags as $fileTag) {
             assert($fileTag instanceof DOMElement);
-            if ($fileTag->attributes->getNamedItem('target')) {
+            $attributes = $fileTag->attributes;
+            assert($attributes instanceof DOMNamedNodeMap);
+            if ($attributes->getNamedItem('target')) {
                 $lintErrors->add(
                     new LintError(
                         LintError::TYPE_ERROR . '  ',
@@ -50,11 +55,13 @@ final class XliffLinter extends XmlLinter
                 continue;
             }
 
-            if ($fileTag->attributes->getNamedItem('target-language')) {
+            if ($attributes->getNamedItem('target-language')) {
                 $transUnitTags = $fileTag->getElementsByTagName('trans-unit');
                 foreach ($transUnitTags as $transUnitTag) {
                     assert($transUnitTag instanceof DOMElement);
-                    if (!$transUnitTag->attributes->getNamedItem('id')) {
+                    $attributes1 = $transUnitTag->attributes;
+                    assert($attributes1 instanceof DOMNamedNodeMap);
+                    if (!$attributes1->getNamedItem('id')) {
                         $lintErrors->add(
                             new LintError(
                                 LintError::TYPE_ERROR . '  ',
@@ -80,7 +87,9 @@ final class XliffLinter extends XmlLinter
                 $transUnitTags = $fileTag->getElementsByTagName('trans-unit');
                 foreach ($transUnitTags as $transUnitTag) {
                     assert($transUnitTag instanceof DOMElement);
-                    if (!$transUnitTag->attributes->getNamedItem('id')) {
+                    $attributes1 = $transUnitTag->attributes;
+                    assert($attributes1 instanceof DOMNamedNodeMap);
+                    if (!$attributes1->getNamedItem('id')) {
                         $lintErrors->add(
                             new LintError(
                                 LintError::TYPE_ERROR . '  ',
