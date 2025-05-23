@@ -199,7 +199,7 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
     // HELPER:
 
-    private function message(string $message, string $color = null): void
+    private function message(string $message, ?string $color = null): void
     {
         $colorStart = '';
         $colorEnd = '';

@@ -17,10 +17,10 @@
     "issues": "https://github.com/pluswerk/grumphp-config/issues"
   },
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
     "composer-plugin-api": "^2.1.0",
     "andersundsehr/phpstan-git-files": "^1.0.2",
-    "andersundsehr/rector-p": "^1.0",
+    "andersundsehr/rector-p": "^1.4.0",
     "composer/semver": "^3.3.0",
     "enlightn/security-checker": "^1.10.0 || ^2",
     "ergebnis/composer-normalize": "^2.31",
@@ -37,8 +37,8 @@
   },
   "require-dev": {
     "composer/composer": "^2.7.7",
-    "pluswerk/grumphp-bom-task": "dev-main as 8.99.99",
-    "pluswerk/grumphp-xliff-task": "dev-main as 6.99.99",
+    "pluswerk/grumphp-bom-task": "8.x-dev as 8.99.99",
+    "pluswerk/grumphp-xliff-task": "6.x-dev as 6.99.99",
     "roave/security-advisories": "dev-latest"
   },
   "repositories": [
