@@ -21,8 +21,8 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets(
         [
             ...RectorSettings::sets(true),
-            ...RectorSettings::setsTypo3(false),
-        ]
+            ...RectorSettings::setsTypo3(true),
+        ],
     );
 
     // remove some rules

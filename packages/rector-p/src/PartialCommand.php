@@ -210,7 +210,7 @@ final class PartialCommand extends Command
     private function askTask(string $file): Task
     {
         $default = Task::execute->value;
-        $choices = array_map(static fn($task) => $task->value, Task::cases());
+        $choices = array_map(static fn(Task $task) => $task->value, Task::cases());
         $question = new ChoiceQuestion('Found changes in file ' . $file . ' (default: ' . $default . ')?', $choices, $default);
 
         $questionHelper = $this->getHelper('question');
