@@ -22,7 +22,7 @@ return static function (RectorConfig $rectorConfig): void {
         [
             ...RectorSettings::sets(true),
             ...RectorSettings::setsTypo3(true),
-        ]
+        ],
     );
 
     // remove some rules
