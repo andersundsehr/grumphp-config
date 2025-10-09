@@ -9,11 +9,11 @@ BASH;
     $absoluteFiles = $exec($command);
 
     // sort paths by amount of slashes high count first
-    usort($absoluteFiles, static fn($a, $b): int => substr_count($b, '/') <=> substr_count($a, '/'));
+    usort($absoluteFiles, static fn(string $a, string $b): int => substr_count($b, '/') <=> substr_count($a, '/'));
     $deepestDirectory = dirname($absoluteFiles[0]) . '/';
 
     //filter all files in that directory
-    $absoluteFiles = array_filter($absoluteFiles, static fn($path): bool => !str_starts_with($path, $deepestDirectory));
+    $absoluteFiles = array_filter($absoluteFiles, static fn(string $path): bool => !str_starts_with($path, $deepestDirectory));
     // add directory, We add this so the cache is not ignored. see https://github.com/andersundsehr/phpstan-git-files/issues/3
     array_unshift($absoluteFiles, $deepestDirectory);
 
