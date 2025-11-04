@@ -14,6 +14,7 @@ use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Php70\Rector\Assign\ListSwapArrayOrderRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
+use Rector\PHPUnit\CodeQuality\Rector\Class_\RemoveDataProviderParamKeysRector;
 use Rector\PostRector\Rector\NameImportingPostRector;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
@@ -210,6 +211,10 @@ final class RectorSettings
              * TO:   $ext !== '' && $ext !== '0' && $ext !== [] ? $ext : '';
              */
             BooleanInTernaryOperatorRuleFixerRector::class,
+            /**
+             * We want to keep the keys for data providers for better readability
+             */
+            RemoveDataProviderParamKeysRector::class
         ];
     }
 
