@@ -15,8 +15,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        php: ['8.2', '8.3', '8.4', '8.5']
         typo3: [false, true]
+        include:
+          - php: '8.5'
+            typo3: false
+            ignorePlatformReqs: '--ignore-platform-req=php+'
+          - php: '8.5'
+            typo3: true
+            ignorePlatformReqs: '--ignore-platform-req=php+'
     container:
       image: kanti/buildy:${{ matrix.php }}
     env:
@@ -26,10 +33,10 @@ jobs:
       - run: git config --global --add safe.directory /__w/grumphp-config/grumphp-config
       - if: ${{ ! matrix.typo3 }}
         run: |
-          composer install --no-progress --no-scripts -n \
+          composer install --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }} \
           && mv phpstan-baseline-without-typo3.neon phpstan-baseline.neon
       - if: ${{ matrix.typo3 }}
-        run: composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts -n
+        run: composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }}
       - run: ./vendor/bin/grumphp run --ansi
 
   test-packages:
@@ -39,7 +46,14 @@ jobs:
       fail-fast: false
       matrix:
         package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
-        php: ['8.2', '8.3', '8.4']
+        php: ['8.2', '8.3', '8.4', '8.5']
+        include:
+          - php: '8.5'
+            typo3: false
+            ignorePlatformReqs: '--ignore-platform-req=php+'
+          - php: '8.5'
+            typo3: true
+            ignorePlatformReqs: '--ignore-platform-req=php+'
     container:
       image: kanti/buildy:${{ matrix.php }}
     env:
@@ -50,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: git config --global --add safe.directory /__w/grumphp-config/grumphp-config
-      - run: composer install --no-progress --no-scripts -n
+      - run: composer install --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }}
       - run: ./vendor/bin/grumphp run --ansi
 
   code-split:

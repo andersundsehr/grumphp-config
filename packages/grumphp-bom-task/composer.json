@@ -15,7 +15,7 @@
     "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task"
   },
   "require": {
-    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
     "phpro/grumphp": "^2.0.0"
   },
   "require-dev": {
