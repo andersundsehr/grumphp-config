@@ -43,7 +43,7 @@ final class BomFixerTask implements TaskInterface
         return $this->config;
     }
 
-    public function withConfig(TaskConfigInterface $config): TaskInterface
+    public function withConfig(TaskConfigInterface $config): BomFixerTask
     {
         $new = clone $this;
         $new->config = $config;
@@ -56,7 +56,7 @@ final class BomFixerTask implements TaskInterface
         return $context instanceof RunContext || $context instanceof GitPreCommitContext;
     }
 
-    public function run(ContextInterface $context): TaskResultInterface
+    public function run(ContextInterface $context): TaskResult
     {
         $files = $context->getFiles()->extensions($this->config->getOptions()['triggered_by']);
         if (0 === count($files)) {

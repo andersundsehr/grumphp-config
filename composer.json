@@ -31,9 +31,9 @@
     "phpstan/phpstan": "^2.1.5",
     "pluswerk/grumphp-bom-task": "^10.0.0",
     "pluswerk/grumphp-xliff-task": "^10.0.0",
-    "rector/rector": "^2.0.9",
+    "rector/rector": "^2.2.10",
     "squizlabs/php_codesniffer": "^4.0.1",
-    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.0.0"
+    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.4.0"
   },
   "require-dev": {
     "andersundsehr/phpstan-git-files": "dev-main as 10.0.0",

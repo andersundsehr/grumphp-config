@@ -15,8 +15,8 @@
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "rector/rector": "^2.0.9",
-    "symfony/console": "^5.4 || ^6.4 || ^7.1"
+    "rector/rector": "^2.2.10",
+    "symfony/console": "^5.4 || ^6.4 || ^7.4"
   },
   "require-dev": {
     "andersundsehr/phpstan-git-files": "@dev",
