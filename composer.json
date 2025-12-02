@@ -17,7 +17,7 @@
     "issues": "https://github.com/pluswerk/grumphp-config/issues"
   },
   "require": {
-    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+    "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
     "composer-plugin-api": "^2.1.0",
     "andersundsehr/phpstan-git-files": "^1.0.2",
     "andersundsehr/rector-p": "^1.4.0",
