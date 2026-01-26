@@ -108,11 +108,17 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
         $changed = false;
         foreach ($typo3RelatedPackages as $package => $version) {
-            if (!InstalledVersions::isInstalled($package) || !InstalledVersions::satisfies(new VersionParser(), $package, $version)) {
-                $this->composer->getConfig()->getConfigSource()->addLink('require-dev', $package, $version);
-                $this->message(sprintf('installing %s in version %s for pluswerk/grumphp-config', $package, $version), 'yellow');
-                $changed = true;
+            if (InstalledVersions::isInstalled($package) && InstalledVersions::satisfies(new VersionParser(), $package, $version)) {
+                continue; // already installed in a matching version
             }
+
+            if (InstalledVersions::isInstalled($package) && str_starts_with((string) InstalledVersions::getPrettyVersion($package), 'dev-')) {
+                continue; // if a dev version is installed, we do not want to override it
+            }
+
+            $this->composer->getConfig()->getConfigSource()->addLink('require-dev', $package, $version);
+            $this->message(sprintf('installing %s in version %s for pluswerk/grumphp-config', $package, $version), 'yellow');
+            $changed = true;
         }
 
         if ($changed) {
