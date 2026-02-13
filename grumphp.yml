@@ -76,4 +76,4 @@ grumphp:
     EXEC_GRUMPHP_COMMAND: "$DDEV_EXEC php"
     ENV:
       # DDEV_EXEC will be empty if no ddev is found or you are in the ddev container.
-      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && echo "$(which ddev)")'
+      DDEV_EXEC: '$([ -n "$IS_DDEV_PROJECT" ] && echo "$(which ddev)")'
