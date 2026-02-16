@@ -3,6 +3,12 @@ parameters:
 		-
 			message: '#^Call to function assert\(\) with true will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
+			count: 6
+			path: src/XliffLinter.php
+
+		-
+			message: '#^Instanceof between DOMNamedNodeMap<DOMAttr> and DOMNamedNodeMap will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
 			count: 3
 			path: src/XliffLinter.php
 

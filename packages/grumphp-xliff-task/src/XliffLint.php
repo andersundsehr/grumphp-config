@@ -46,7 +46,7 @@ final class XliffLint extends AbstractLinterTask
         return ($context instanceof GitPreCommitContext || $context instanceof RunContext);
     }
 
-    public function run(ContextInterface $context): TaskResultInterface
+    public function run(ContextInterface $context): TaskResult
     {
         $options = $this->getConfig()->getOptions();
         $files = $context->getFiles()->extensions($options['triggered_by']);

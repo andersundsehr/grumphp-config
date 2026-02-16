@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+## Description: Run grumphp command inside the web container
+## Usage: grumphp [args]
+## Example: "ddev grumphp run" or "ddev grumphp git:init"
+## ProjectTypes: grumphp
+## ExecRaw: true
+## MutagenSync: true
+
+# Ignore anything we find in the mounted global commands
+PATH=${PATH//\/mnt\/ddev-global-cache\/global-commands\/web/}
+
+grumphp "$@"

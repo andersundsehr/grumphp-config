@@ -18,10 +18,6 @@ use Rector\PostRector\Rector\NameImportingPostRector;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
-use Rector\Strict\Rector\BooleanNot\BooleanInBooleanNotRuleFixerRector;
-use Rector\Strict\Rector\If_\BooleanInIfConditionRuleFixerRector;
-use Rector\Strict\Rector\Ternary\BooleanInTernaryOperatorRuleFixerRector;
-use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
@@ -190,26 +186,10 @@ final class RectorSettings
              */
             ExplicitBoolCompareRector::class,
             /**
-             * FROM: (!self::$email) {
-             * TO:   if (self::$email === '' || self::$email === '0') {
-             */
-            BooleanInBooleanNotRuleFixerRector::class,
-            BooleanInIfConditionRuleFixerRector::class,
-            /**
-             * FROM: $filter['userGroup'] = max($userGroups ?: [0]);
-             * TO:   $filter['userGroup'] = max($userGroups !== [] ? $userGroups : [0]);
-             */
-            DisallowedShortTernaryRuleFixerRector::class,
-            /**
              * FROM: isset($this->x);
              * TO:   property_exists($this, 'x') && $this->x !== null;
              */
             IssetOnPropertyObjectToPropertyExistsRector::class,
-            /**
-             * FROM: $ext ? $ext : '';
-             * TO:   $ext !== '' && $ext !== '0' && $ext !== [] ? $ext : '';
-             */
-            BooleanInTernaryOperatorRuleFixerRector::class,
         ];
     }
 
