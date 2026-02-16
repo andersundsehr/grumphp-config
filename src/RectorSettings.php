@@ -21,8 +21,12 @@ use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
+use stdClass;
 
 use function array_filter;
+use function assert;
+use function explode;
+use function is_string;
 use function putenv;
 
 final class RectorSettings
@@ -92,14 +96,29 @@ final class RectorSettings
                 //SetList::PHP_80, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
                 //SetList::PHP_81, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
                 //SetList::PHP_82, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-            ]
+                ...self::internalSetsTypo3($entirety),
+            ],
         );
     }
 
     /**
      * @return array<int, string>
+     * @deprecated can be removed
      */
     public static function setsTypo3(bool $entirety = false): array
+    {
+        // nonsense method to not break BC
+        if ($entirety) {
+            return (array)new stdClass();
+        }
+
+        return [];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function internalSetsTypo3(bool $entirety = false): array
     {
         $setList = null;
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
@@ -120,8 +139,11 @@ final class RectorSettings
                 $setList = $entirety ? Typo3LevelSetList::UP_TO_TYPO3_12 : Typo3SetList::TYPO3_12;
                 break;
             case 13:
-            case 'dev-main':
                 $setList = $entirety ? Typo3LevelSetList::UP_TO_TYPO3_13 : Typo3SetList::TYPO3_13;
+                break;
+            case 14:
+            case 'dev-main':
+                $setList = $entirety ? Typo3LevelSetList::UP_TO_TYPO3_14 : Typo3SetList::TYPO3_14;
                 break;
         }
 
@@ -190,13 +212,24 @@ final class RectorSettings
              * TO:   property_exists($this, 'x') && $this->x !== null;
              */
             IssetOnPropertyObjectToPropertyExistsRector::class,
+
+            ...self::internalSkipTypo3(),
         ];
     }
 
     /**
      * @return array<int|string, list<string>|string>
+     * @deprecated can be removed
      */
     public static function skipTypo3(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<int|string, list<string>|string>
+     */
+    private static function internalSkipTypo3(): array
     {
         if (!InstalledVersions::isInstalled('typo3/cms-core')) {
             return [];

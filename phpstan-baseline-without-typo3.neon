@@ -55,6 +55,12 @@ parameters:
 			path: src/RectorSettings.php
 
 		-
+			message: '#^Access to constant TYPO3_14 on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3SetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/RectorSettings.php
+
+		-
 			message: '#^Access to constant UP_TO_TYPO3_10 on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3LevelSetList\.$#'
 			identifier: class.notFound
 			count: 1
@@ -74,6 +80,12 @@ parameters:
 
 		-
 			message: '#^Access to constant UP_TO_TYPO3_13 on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3LevelSetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/RectorSettings.php
+
+		-
+			message: '#^Access to constant UP_TO_TYPO3_14 on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3LevelSetList\.$#'
 			identifier: class.notFound
 			count: 1
 			path: src/RectorSettings.php

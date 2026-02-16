@@ -79,7 +79,7 @@
     "class": "PLUS\\GrumPHPConfig\\Composer\\Plugin"
   },
   "require-typo3": {
-    "saschaegerer/phpstan-typo3": "^2.0.0",
+    "saschaegerer/phpstan-typo3": "^2.0.0 || ^3.0.1",
     "ssch/typo3-rector": "^3.1.0"
   }
 }
