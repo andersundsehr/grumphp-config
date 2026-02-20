@@ -69,6 +69,7 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
     public function simpleProcessing(): void
     {
         $this->createRectorConfig();
+        $this->createFractorConfig();
     }
 
     private function removeOldConfigPath(): void
@@ -131,6 +132,15 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
         if (!file_exists(getcwd() . '/rector.php')) {
             copy(dirname(__DIR__, 2) . '/rector.php', getcwd() . '/rector.php');
             $this->message('rector.php file created', 'yellow');
+        }
+    }
+
+    /* @todo: only if it is a typo3 project */
+    private function createFractorConfig(): void
+    {
+        if (!file_exists(getcwd() . '/fractor.php')) {
+            copy(dirname(__DIR__, 2) . '/fractor.php', getcwd() . '/fractor.php');
+            $this->message('fractor.php file created', 'yellow');
         }
     }
 

@@ -11,7 +11,7 @@ for dir in $directories
 do
     cd $dir
     # cleanup each package symlinks:
-    rm -rf vendor/pluswerk/grumphp-bom-task vendor/pluswerk/grumphp-xliff-task vendor/andersundsehr/phpstan-git-files vendor/andersundsehr/rector-p
+    rm -rf vendor/pluswerk/grumphp-bom-task vendor/andersundsehr/grumphp-fractor-task vendor/pluswerk/grumphp-xliff-task vendor/andersundsehr/phpstan-git-files vendor/andersundsehr/rector-p
 done
 
 for dir in $directories
@@ -27,7 +27,7 @@ do
     # run the checks:
     vendor/bin/grumphp run
     # cleanup symlinks so that we can run the script again
-    rm -rf vendor/pluswerk/grumphp-bom-task vendor/pluswerk/grumphp-xliff-task vendor/andersundsehr/phpstan-git-files vendor/andersundsehr/rector-p
+    rm -rf vendor/pluswerk/grumphp-bom-task vendor/andersundsehr/grumphp-fractor-task vendor/pluswerk/grumphp-xliff-task vendor/andersundsehr/phpstan-git-files vendor/andersundsehr/rector-p
 done
 
 cd $CWD

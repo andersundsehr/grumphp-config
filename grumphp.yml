@@ -11,6 +11,10 @@ parameters:
   convention.rector_enabled: true
   convention.rector_config: 'rector.php'
   convention.rector_clear-cache: false
+  convention.fractor_ignore_pattern: []
+  convention.fractor_enable: true
+  convention.fractor_config: 'fractor.php'
+  convention.fractor_clear-cache: false
   convention.phpstan_level: ~
 
 grumphp:
@@ -68,8 +72,16 @@ grumphp:
       triggered_by: [ 'php' ]
       clear_cache: "%convention.rector_clear-cache%"
       ignore_patterns: "%convention.rector_ignore_pattern%"
+    fractor:
+      metadata:
+        enabled: "%convention.fractor_enable%"
+      config: "%convention.fractor_config%"
+      triggered_by: [ 'php' ]
+      clear_cache: "%convention.fractor_clear-cache%"
+      ignore_patterns: "%convention.fractor_ignore_pattern%"
   extensions:
     - PLUS\GrumPHPBomTask\ExtensionLoader
+    - Andersundsehr\GrumPHPFractorTask\ExtensionLoader
     - PLUS\GrumPHPXliffTask\ExtensionLoader
   git_hook_variables:
     # $DDEV_EXEC will be empty or be the path to ddev exec, so it will work in ddev projects and other projects. :) and inside and outside the ddev container.

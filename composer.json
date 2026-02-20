@@ -30,17 +30,19 @@
     "phpstan/extension-installer": "^1.4.3",
     "phpstan/phpstan": "^2.1.5",
     "pluswerk/grumphp-bom-task": "^10.0.0",
+    "andersundsehr/grumphp-fractor-task": "^10.0.0",
     "pluswerk/grumphp-xliff-task": "^10.0.0",
     "rector/rector": "^2.2.10",
     "squizlabs/php_codesniffer": "^4.0.1",
-    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.4.0"
+    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.4.0",
+    "a9f/typo3-fractor": "^0.5.8"
   },
   "require-dev": {
-    "a9f/typo3-fractor": "^0.5.5",
     "andersundsehr/phpstan-git-files": "dev-main as 10.0.0",
     "andersundsehr/rector-p": "dev-main as 10.0.0",
     "composer/composer": "^2.8.5",
     "pluswerk/grumphp-bom-task": "dev-main as 10.0.0",
+    "andersundsehr/grumphp-fractor-task": "dev-main as 10.0.0",
     "pluswerk/grumphp-xliff-task": "dev-main as 10.0.0",
     "roave/security-advisories": "dev-latest",
     "symfony/var-dumper": "^5.4.0 || ^6.4.18 || ^7.0.0"
@@ -72,6 +74,7 @@
     "preferred-install": {
       "andersundsehr/phpstan-git-files": "source",
       "pluswerk/grumphp-bom-task": "source",
+      "andersundsehr/grumphp-fractor-task": "source",
       "pluswerk/grumphp-xliff-task": "source",
       "*": "dist"
     },
