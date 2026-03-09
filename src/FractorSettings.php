@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PLUS\GrumPHPConfig;
 
+use a9f\Fractor\Application\Contract\FractorRule;
 use a9f\Typo3Fractor\Set\Typo3LevelSetList;
 use a9f\Typo3Fractor\Set\Typo3SetList;
 use a9f\FractorTypoScript\Configuration\TypoScriptProcessorOption;
@@ -76,7 +77,7 @@ final class FractorSettings
     }
 
     /**
-     * @return array<int,string>
+     * @return array<class-string<FractorRule>>
      */
     public static function rules(): array
     {
