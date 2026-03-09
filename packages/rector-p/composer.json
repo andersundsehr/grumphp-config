@@ -19,11 +19,11 @@
     "symfony/console": "^5.4 || ^6.4 || ^7.4"
   },
   "require-dev": {
+    "andersundsehr/grumphp-fractor-task": "@dev",
     "andersundsehr/phpstan-git-files": "@dev",
     "pluswerk/grumphp-bom-task": "@dev",
     "pluswerk/grumphp-config": "@dev",
-    "pluswerk/grumphp-xliff-task": "@dev",
-    "andersundsehr/grumphp-fractor-task": "@dev"
+    "pluswerk/grumphp-xliff-task": "@dev"
   },
   "repositories": [
     {
