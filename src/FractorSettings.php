@@ -54,7 +54,7 @@ final class FractorSettings
     }
 
     /**
-     * @return array<int,string>
+     * @return array<string, bool|PrettyPrinterConditionTermination|int|string>
      */
     public static function options(): array
     {
