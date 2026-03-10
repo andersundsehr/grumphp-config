@@ -83,12 +83,12 @@ final class FractorSettings
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {
+            // we need at least one rule to run fractor and we install fractor even if typo3 is not installed
             return [
                 RemoveUseCacheHashFromTypolinkTypoScriptFractor::class,
             ];
         }
 
-        // we need at least one rule to run fractor and we install fractor even if typo3 is not installed
         return [];
     }
 }
