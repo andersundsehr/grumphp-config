@@ -80,7 +80,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
+        package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p', 'grumphp-fractor-task']
     steps:
       - uses: actions/checkout@v4
       - run: ./split.sh ${{ matrix.package }}
