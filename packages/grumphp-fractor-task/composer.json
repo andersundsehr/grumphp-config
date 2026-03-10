@@ -1,30 +1,29 @@
 {
-  "name": "pluswerk/grumphp-xliff-task",
-  "description": "GrumPHP task to lint xlf/xliff Files",
+  "name": "andersundsehr/grumphp-fractor-task",
+  "description": "GrumPHP task for fractor",
   "license": "LGPL-3.0-or-later",
   "type": "library",
   "authors": [
     {
-      "name": "Matthias Vogel",
-      "email": "m.vogel@andersundsehr.com",
+      "name": "Benjamin Stiber",
+      "email": "b.stiber@andersundsehr.com",
       "homepage": "https://www.andersundsehr.com"
     }
   ],
   "support": {
     "issues": "https://github.com/andersundsehr/grumphp-config/issues",
-    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-xliff-task"
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task"
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "ext-dom": "*",
     "phpro/grumphp": "^2.0.0"
   },
   "require-dev": {
-    "andersundsehr/grumphp-fractor-task": "@dev",
     "andersundsehr/phpstan-git-files": "@dev",
     "andersundsehr/rector-p": "@dev",
     "pluswerk/grumphp-bom-task": "@dev",
-    "pluswerk/grumphp-config": "@dev"
+    "pluswerk/grumphp-config": "@dev",
+    "pluswerk/grumphp-xliff-task": "@dev"
   },
   "repositories": [
     {
@@ -46,7 +45,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "PLUS\\GrumPHPXliffTask\\": "src/"
+      "Andersundsehr\\GrumPHPFractorTask\\": "src/"
     }
   },
   "config": {

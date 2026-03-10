@@ -1,0 +1,8 @@
+services:
+  Andersundsehr\GrumPHPFractorTask\FractorTask:
+    class: Andersundsehr\GrumPHPFractorTask\FractorTask
+    arguments:
+      - '@process_builder'
+      - '@formatter.raw_process'
+    tags:
+      - {name: grumphp.task, task: fractor}
