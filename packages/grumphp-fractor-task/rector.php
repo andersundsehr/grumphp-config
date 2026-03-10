@@ -21,7 +21,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->sets(
         [
             ...RectorSettings::sets(true),
-            ...RectorSettings::setsTypo3(true),
         ],
     );
 
@@ -30,7 +29,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->skip(
         [
             ...RectorSettings::skip(),
-            ...RectorSettings::skipTypo3(),
 
             /**
              * rector should not touch these files
