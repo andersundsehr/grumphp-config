@@ -14,6 +14,7 @@ use_dns_when_possible: true
 composer_version: "2"
 web_environment:
     - COMPOSER_ROOT_VERSION=dev-main
+    - TYPO3_SKIP_ASSET_PUBLISH=true
 corepack_enable: false
 
 # Key features of DDEV's config.yaml:
