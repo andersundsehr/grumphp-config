@@ -36,7 +36,7 @@ jobs:
           composer install --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }} \
           && mv phpstan-baseline-without-typo3.neon phpstan-baseline.neon
       - if: ${{ matrix.typo3 }}
-        run: composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }}
+        run: TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }}
       - run: ./vendor/bin/grumphp run --ansi
 
   test-packages:
