@@ -19,6 +19,7 @@ use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
 use stdClass;
@@ -245,6 +246,9 @@ final class RectorSettings
             __DIR__ . '/**/Configuration/ExtensionBuilder/*',
             NameImportingPostRector::class => [
                 'ClassAliasMap.php',
+            ],
+            SafeDeclareStrictTypesRector::class => [
+                __DIR__ . '/ext_emconf.php',
             ],
         ];
     }
