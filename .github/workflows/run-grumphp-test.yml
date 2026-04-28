@@ -28,8 +28,9 @@ jobs:
       image: kanti/buildy:${{ matrix.php }}
     env:
       COMPOSER_ROOT_VERSION: dev-main
+      TYPO3_SKIP_ASSET_PUBLISH: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: git config --global --add safe.directory /__w/grumphp-config/grumphp-config
       - if: ${{ ! matrix.typo3 }}
         run: |
@@ -58,11 +59,12 @@ jobs:
       image: kanti/buildy:${{ matrix.php }}
     env:
       COMPOSER_ROOT_VERSION: dev-main
+      TYPO3_SKIP_ASSET_PUBLISH: 1
     defaults:
       run:
         working-directory: ./packages/${{ matrix.package }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: git config --global --add safe.directory /__w/grumphp-config/grumphp-config
       - run: composer install --no-progress --no-scripts -n ${{ matrix.ignorePlatformReqs }}
       - run: ./vendor/bin/grumphp run --ansi
@@ -82,5 +84,5 @@ jobs:
       matrix:
         package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: ./split.sh ${{ matrix.package }}
