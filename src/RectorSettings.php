@@ -19,6 +19,7 @@ use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
 use stdClass;
@@ -242,9 +243,12 @@ final class RectorSettings
             SensitiveConstantNameRector::class,
 
             // @see https://github.com/sabbelasichon/typo3-rector/issues/2536
-            __DIR__ . '/**/Configuration/ExtensionBuilder/*',
+            getcwd() . '/**/Configuration/ExtensionBuilder/*',
             NameImportingPostRector::class => [
                 'ClassAliasMap.php',
+            ],
+            SafeDeclareStrictTypesRector::class => [
+                getcwd() . '/ext_emconf.php',
             ],
         ];
     }
