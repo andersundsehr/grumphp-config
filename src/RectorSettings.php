@@ -243,12 +243,12 @@ final class RectorSettings
             SensitiveConstantNameRector::class,
 
             // @see https://github.com/sabbelasichon/typo3-rector/issues/2536
-            __DIR__ . '/**/Configuration/ExtensionBuilder/*',
+            getcwd() . '/**/Configuration/ExtensionBuilder/*',
             NameImportingPostRector::class => [
                 'ClassAliasMap.php',
             ],
             SafeDeclareStrictTypesRector::class => [
-                __DIR__ . '/ext_emconf.php',
+                getcwd() . '/ext_emconf.php',
             ],
         ];
     }
