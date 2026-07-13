@@ -7,6 +7,7 @@ namespace PLUS\GrumPHPConfig;
 use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
+use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
@@ -209,6 +210,11 @@ final class RectorSettings
              * TO:   if ($timeInMinutes % 60 !== 0) {
              */
             ExplicitBoolCompareRector::class,
+            /**
+             * FROM: if ($array) {
+             * TO:   if ($array !== []) {
+             */
+            ArrayExplicitBoolCompareRector::class,
             /**
              * FROM: if ($object) {
              * TO:   if ($object instanceof SomeClass) {
