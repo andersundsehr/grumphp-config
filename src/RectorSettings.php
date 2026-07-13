@@ -210,8 +210,8 @@ final class RectorSettings
              */
             ExplicitBoolCompareRector::class,
             /**
-             * FROM: if($object) {
-             * TO:   if($object instanceof SomeClass) {
+             * FROM: if ($object) {
+             * TO:   if ($object instanceof SomeClass) {
              */
             ObjectExplicitBoolCompareRector::class,
             /**
