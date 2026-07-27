@@ -6,7 +6,6 @@ namespace PLUS\GrumPHPXliffTask;
 
 use DOMDocument;
 use DOMElement;
-use DOMNamedNodeMap;
 use GrumPHP\Collection\LintErrorsCollection;
 use GrumPHP\Linter\LintError;
 use GrumPHP\Linter\Xml\XmlLinter;
@@ -40,9 +39,7 @@ final class XliffLinter extends XmlLinter
         assert($rootElement instanceof DOMElement);
         $fileTags = $rootElement->getElementsByTagName('file');
         foreach ($fileTags as $fileTag) {
-            assert($fileTag instanceof DOMElement);
             $attributes = $fileTag->attributes;
-            assert($attributes instanceof DOMNamedNodeMap);
             if ($attributes->getNamedItem('target')) {
                 $lintErrors->add(
                     new LintError(
@@ -58,9 +55,7 @@ final class XliffLinter extends XmlLinter
             if ($attributes->getNamedItem('target-language')) {
                 $transUnitTags = $fileTag->getElementsByTagName('trans-unit');
                 foreach ($transUnitTags as $transUnitTag) {
-                    assert($transUnitTag instanceof DOMElement);
                     $attributes1 = $transUnitTag->attributes;
-                    assert($attributes1 instanceof DOMNamedNodeMap);
                     if (!$attributes1->getNamedItem('id')) {
                         $lintErrors->add(
                             new LintError(
@@ -86,9 +81,7 @@ final class XliffLinter extends XmlLinter
             } else {
                 $transUnitTags = $fileTag->getElementsByTagName('trans-unit');
                 foreach ($transUnitTags as $transUnitTag) {
-                    assert($transUnitTag instanceof DOMElement);
                     $attributes1 = $transUnitTag->attributes;
-                    assert($attributes1 instanceof DOMNamedNodeMap);
                     if (!$attributes1->getNamedItem('id')) {
                         $lintErrors->add(
                             new LintError(
