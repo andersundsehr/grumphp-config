@@ -78,7 +78,6 @@ final class RectorSettings
                 SetList::CODE_QUALITY, // YES
                 SetList::CODING_STYLE, // YES
                 SetList::DEAD_CODE, // YES
-                SetList::STRICT_BOOLEANS, // only DisallowedEmptyRuleFixerRector
                 //SetList::GMAGICK_TO_IMAGICK, // NO
                 //SetList::NAMING, //NO is not good
                 SetList::PRIVATIZATION, // some things may be bad
