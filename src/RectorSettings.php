@@ -12,8 +12,6 @@ use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
-use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
-use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Php70\Rector\Assign\ListSwapArrayOrderRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\PostRector\Rector\NameImportingPostRector;
@@ -164,11 +162,6 @@ final class RectorSettings
     {
         return [
             /**
-             * FROM: if($object) {
-             * TO:   if($object !== null) {
-             */
-            NullableCompareToNullRector::class,
-            /**
              * FROM: if ($dateTime === null) {
              * TO:   if (! $dateTime instanceof DateTime) {
              */
@@ -178,11 +171,6 @@ final class RectorSettings
              * TO:   if ($someClass instanceof SomeClass && $someClass->someMethod()) {
              */
             BinaryOpNullableToInstanceofRector::class,
-            /**
-             * FROM: if(count($array)) {
-             * TO:   if($array !== []) {
-             */
-            CountArrayToEmptyArrayComparisonRector::class,
             /**
              * FROM: protected string $name;
              * TO:   private string  $name;
