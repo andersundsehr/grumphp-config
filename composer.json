@@ -35,7 +35,7 @@
     "rector/rector": "^2.2.10",
     "sebastian/diff": "^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0",
     "squizlabs/php_codesniffer": "^4.0.1",
-    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.4.0"
+    "symfony/yaml": "^5.4.0 || ^6.4.18 || ^7.4.0 || ^8.1.0"
   },
   "require-dev": {
     "andersundsehr/grumphp-fractor-task": "dev-main as 11.0.0",
@@ -45,7 +45,7 @@
     "pluswerk/grumphp-bom-task": "dev-main as 11.0.0",
     "pluswerk/grumphp-xliff-task": "dev-main as 11.0.0",
     "roave/security-advisories": "dev-latest",
-    "symfony/var-dumper": "^5.4.0 || ^6.4.18 || ^7.0.0"
+    "symfony/var-dumper": "^5.4.0 || ^6.4.18 || ^7.0.0 || ^8.1.0"
   },
   "repositories": [
     {
