@@ -19,7 +19,7 @@
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
     "composer-plugin-api": "^2.1.0",
-    "a9f/typo3-fractor": "^0.5.8",
+    "a9f/typo3-fractor": "^0.5.8 || ^1.0.0",
     "andersundsehr/grumphp-fractor-task": "^11.0.0",
     "andersundsehr/phpstan-git-files": "^11.0.0",
     "andersundsehr/rector-p": "^11.0.0",

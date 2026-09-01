@@ -8,10 +8,9 @@ use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
-use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
-use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
+use Rector\Configuration\Deprecation\Contract\DeprecatedInterface;
 use Rector\Php70\Rector\Assign\ListSwapArrayOrderRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\PostRector\Rector\NameImportingPostRector;
@@ -80,22 +79,7 @@ final class RectorSettings
                 //SetList::NAMING, //NO is not good
                 SetList::PRIVATIZATION, // some things may be bad
                 SetList::TYPE_DECLARATION, // YES
-                SetList::EARLY_RETURN, // YES
-                SetList::INSTANCEOF,
                 $phpFile,
-                //SetList::PHP_52, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_53, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_54, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_55, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_56, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_70, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_71, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_72, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_73, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_74, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_80, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_81, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
-                //SetList::PHP_82, // YES, included in LevelSetList::class . '::UP_TO_PHP_' ...
                 ...self::internalSetsTypo3($entirety),
             ],
         );
@@ -160,7 +144,7 @@ final class RectorSettings
      */
     public static function skip(): array
     {
-        return [
+        return self::filterOutDeprecatedClasses([
             /**
              * FROM: if ($dateTime === null) {
              * TO:   if (! $dateTime instanceof DateTime) {
@@ -186,18 +170,6 @@ final class RectorSettings
              */
             ListSwapArrayOrderRector::class,
             /**
-             * Maybe to a later date?
-             *
-             * FROM: if($x) {
-             * TO:   $x ? $abcde + $xyz : $trsthjzuj - $gesrtdnzmf
-             */
-            SimplifyIfElseToTernaryRector::class,
-            /**
-             * FROM: if ($timeInMinutes % 60) {
-             * TO:   if ($timeInMinutes % 60 !== 0) {
-             */
-            ExplicitBoolCompareRector::class,
-            /**
              * FROM: if ($array) {
              * TO:   if ($array !== []) {
              */
@@ -214,7 +186,7 @@ final class RectorSettings
             IssetOnPropertyObjectToPropertyExistsRector::class,
 
             ...self::internalSkipTypo3(),
-        ];
+        ]);
     }
 
     /**
@@ -250,5 +222,35 @@ final class RectorSettings
                 getcwd() . '/ext_emconf.php',
             ],
         ];
+    }
+
+    /**
+     * @param array<int|string, list<string>|string> $skips
+     * @return array<int|string, list<string>|string>
+     */
+    private static function filterOutDeprecatedClasses(array $skips): array
+    {
+        foreach ($skips as $key => $value) {
+            $class = $key;
+            if (is_string($value)) {
+                $class = $value;
+            }
+
+            if (!is_string($class)) {
+                throw new InvalidArgumentException('Class name must be a string ' . json_encode([$key => $value]));
+            }
+
+            if (!class_exists($class)) {
+                unset($skips[$key]);
+                continue;
+            }
+
+            if (is_a($class, DeprecatedInterface::class, true)) {
+                unset($skips[$key]);
+                continue;
+            }
+        }
+
+        return $skips;
     }
 }
