@@ -6,7 +6,6 @@ namespace PLUS\GrumPHPXliffTask;
 
 use GrumPHP\Exception\RuntimeException;
 use GrumPHP\Runner\TaskResult;
-use GrumPHP\Runner\TaskResultInterface;
 use GrumPHP\Task\AbstractLinterTask;
 use GrumPHP\Task\Config\ConfigOptionsResolver;
 use GrumPHP\Task\Context\ContextInterface;
