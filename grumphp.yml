@@ -92,4 +92,4 @@ grumphp:
     ENV:
       # DDEV_EXEC
       # Will only be set if: ddev is installed and the project has a .ddev folder and you are not inside the ddev container.
-      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && [ -d ".ddev" ] && echo "$(which ddev)")'
+      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && [ -d ".ddev" ] && DDEV="$(command -v ddev)" && [ -n "$DDEV" ] && echo "$DDEV exec FORCE_COLOR=1")'
