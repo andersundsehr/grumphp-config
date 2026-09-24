@@ -30,6 +30,7 @@ grumphp:
       no_check_publish: true
       with_dependencies: false
       strict: false
+    composer_validate_autoload: ~
     composer_normalize:
       indent_size: 2
       indent_style: space
