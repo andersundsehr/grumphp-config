@@ -41,7 +41,7 @@ final class RectorSettings
             if (str_starts_with((string)$arg, '--level=')) {
                 $cliLevel = (int)(substr((string)$arg, 8));
                 if ($cliLevel < 0) {
-                    throw new InvalidArgumentException('Level must be bigger than 0');
+                    throw new InvalidArgumentException('Level must be bigger than 0', 1791530001);
                 }
 
                 //filter out argument so rector does not complain
@@ -237,7 +237,7 @@ final class RectorSettings
             }
 
             if (!is_string($class)) {
-                throw new InvalidArgumentException('Class name must be a string ' . json_encode([$key => $value]));
+                throw new InvalidArgumentException('Class name must be a string ' . json_encode([$key => $value]), 1791530002);
             }
 
             if (!class_exists($class)) {
