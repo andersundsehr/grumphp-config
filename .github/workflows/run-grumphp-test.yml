@@ -29,7 +29,14 @@ jobs:
           composer install --no-progress --no-scripts -n \
           && mv phpstan-baseline-without-typo3.neon phpstan-baseline.neon
       - if: ${{ matrix.typo3 }}
-        run: TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector "typo3/cms-core:${{ matrix.typo3 }}" --no-progress --no-scripts -n
+        # TYPO3 still requires ~0.22; 1.0.0 fixes the advisories without changing its API.
+        # This CI-only alias installs/audits the real 1.0.0 release. Remove it once TYPO3 accepts ^1.0.
+        run: >-
+          TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector
+          "typo3/cms-core:${{ matrix.typo3 }}" "enshrined/svg-sanitize:1.0.0 as 0.22.99"
+          --no-progress --no-scripts -n
+      - if: ${{ matrix.typo3 }}
+        run: bash tests/typo3-svg-sanitizer.sh
       - run: ./vendor/bin/grumphp run --ansi
 
   test-packages:
