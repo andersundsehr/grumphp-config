@@ -57,7 +57,7 @@ final class VersionUtility
      */
     public static function getRequire(string $requireSectionName): array
     {
-        $file = dirname(__DIR__) . '/composer.json';
+        $file = __DIR__ . '/../composer.json';
         $composerJsonData = self::readJson($file);
         return $composerJsonData['require-' . $requireSectionName] ?? [];
     }

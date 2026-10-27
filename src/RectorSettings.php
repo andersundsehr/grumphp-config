@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
+use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfElseToTernaryRector;
@@ -163,6 +164,11 @@ final class RectorSettings
     public static function skip(): array
     {
         return [
+            /**
+             * Keep nullable object checks unchanged, including with Rector 2.8+.
+             * This rule replaces the individual nullable object rules skipped below.
+             */
+            ExplicitNullableObjectInstanceRector::class,
             /**
              * FROM: if($object) {
              * TO:   if($object !== null) {
