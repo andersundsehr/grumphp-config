@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use InvalidArgumentException;
 use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
+use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
 use Rector\Configuration\Deprecation\Contract\DeprecatedInterface;
@@ -145,6 +146,11 @@ final class RectorSettings
     public static function skip(): array
     {
         return self::filterOutDeprecatedClasses([
+            /**
+             * Keep nullable object checks unchanged, including with Rector 2.8+.
+             * This rule replaces the individual nullable object rules skipped below.
+             */
+            ExplicitNullableObjectInstanceRector::class,
             /**
              * FROM: if ($dateTime === null) {
              * TO:   if (! $dateTime instanceof DateTime) {
