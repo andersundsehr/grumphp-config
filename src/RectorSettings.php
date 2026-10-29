@@ -150,7 +150,9 @@ final class RectorSettings
              * Keep nullable object checks unchanged, including with Rector 2.8+.
              * This rule replaces the individual nullable object rules skipped below.
              */
-            ExplicitNullableObjectInstanceRector::class,
+            ...(class_exists(ExplicitNullableObjectInstanceRector::class)
+                ? [ExplicitNullableObjectInstanceRector::class]
+                : []),
             /**
              * FROM: if ($dateTime === null) {
              * TO:   if (! $dateTime instanceof DateTime) {
