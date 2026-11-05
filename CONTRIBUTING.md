@@ -13,8 +13,10 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 | `src/RectorSettings.php`, `src/FractorSettings.php` | Rule sets and skips used by the generated `rector.php` and `fractor.php` |
 | `src/VersionUtility.php` | Reads the lowest PHP and TYPO3 version from the project's `composer.json` |
 | `grumphp.yml` | The shared GrumPHP configuration that projects import; also the configuration for this repository |
-| `rector.php`, `fractor.php`, `phpstan.neon`, `phpstan-baseline.neon` | Templates that the plugin copies into projects; also the configuration for this repository |
-| `phpstan-baseline-without-typo3.neon` | PHPStan baseline for CI runs without TYPO3 packages |
+| `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository |
+| `phpstan-baseline.neon` | PHPStan baseline of this repository for CI runs with TYPO3 packages; new projects get an empty baseline instead |
+| `phpstan-baseline-without-typo3.neon` | PHPStan baseline of this repository for CI runs without TYPO3 packages |
+| `.gitattributes` | Files that are not part of the Composer package (`export-ignore`), e.g. `packages/`, the baselines and the scripts |
 | `logo.txt` | ASCII logo that GrumPHP prints after a run |
 | `packages/*` | The packages, each with its own `composer.json`, `grumphp.yml` and tool configuration |
 | `grumphp-run-all.sh` | Runs GrumPHP in every package and in the root |

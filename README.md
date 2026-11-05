@@ -74,7 +74,7 @@ Composer asks whether it may run the Composer plugins that come with this packag
 | `rector.php` | Rector configuration based on `PLUS\GrumPHPConfig\RectorSettings` (see [Rector](#rector)) |
 | `fractor.php` | Fractor configuration based on `PLUS\GrumPHPConfig\FractorSettings` (see [Fractor](#fractor)) |
 | `phpstan.neon` | PHPStan level 8, includes the baseline and [`andersundsehr/phpstan-git-files`](packages/phpstan-git-files) |
-| `phpstan-baseline.neon` | Baseline for existing PHPStan errors |
+| `phpstan-baseline.neon` | An empty baseline for existing PHPStan errors (see [PHPStan](#phpstan)) |
 
 `rector.php` and `fractor.php` are also created after `composer dump-autoload`.
 
