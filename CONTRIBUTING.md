@@ -29,8 +29,10 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 ```bash
 ddev start
 ddev composer install
-ddev exec vendor/bin/grumphp run
+ddev grumphp run
 ```
+
+The custom command `ddev grumphp` runs GrumPHP of the root project in the web container, e.g. `ddev grumphp run` or `ddev grumphp git:init`.
 
 DDEV uses PHP 8.4 and sets `COMPOSER_ROOT_VERSION=dev-main`, so Composer can resolve the packages from `packages/`.
 
