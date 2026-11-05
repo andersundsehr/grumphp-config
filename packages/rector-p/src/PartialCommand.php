@@ -226,18 +226,31 @@ final class PartialCommand extends Command
     private function dryRunRector(string $file): bool
     {
         $this->output->writeln('<fg=white;bg=blue>Checking file ' . $file . ' ...</>');
-        $exitCode = $this->runCommand($this->getBinPath() . "rector process --ansi --no-progress-bar --dry-run " . $file);
+        $exitCode = $this->runCommand($this->rectorCommand('--dry-run', $file));
         return $exitCode === 0;
     }
 
     private function executeRector(string $file): void
     {
-        $exitCode = $this->runCommand($this->getBinPath() . "rector process --ansi --no-progress-bar --no-diffs " . $file);
+        $exitCode = $this->runCommand($this->rectorCommand('--no-diffs', $file));
         if ($exitCode) {
             exit($exitCode);
         }
 
         $this->cache->setProcessed($file);
+    }
+
+    /**
+     * passes the --config option on, so every rector run uses the same config as the file list
+     */
+    private function rectorCommand(string $mode, string $file): string
+    {
+        $config = $this->input->getOption(Option::CONFIG);
+        assert(is_string($config));
+
+        return $this->getBinPath() . 'rector process --ansi --no-progress-bar ' . $mode
+            . ' --config=' . escapeshellarg($config)
+            . ' ' . escapeshellarg($file);
     }
 
     private function runCommand(string $command): int
