@@ -93,7 +93,7 @@ Options:
   -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
 ```
 
-- `--config` only selects the file that the list of files is read from. The Rector runs for the single files use Rector's default, `rector.php` in the current directory.
+- `--config` is passed on to every Rector run, so the file list and the changes use the same configuration.
 - With `-vv` `rector-p` prints every Rector command, with `-vvv` also how long it took.
 - `rector-p` calls `rector` from Composer's `vendor/bin` directory, or from your `PATH` if it cannot find it there.
 - If applying the changes to a file fails, `rector-p` stops with Rector's exit code.

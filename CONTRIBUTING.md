@@ -99,8 +99,6 @@ If you change code that has entries in the baselines, update both files. To repr
 TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts
 ```
 
-Keep in mind that `phpstan-baseline.neon` is also the template that the plugin copies into new projects.
-
 ## Continuous integration
 
 The workflow [`run-grumphp-test.yml`](.github/workflows/run-grumphp-test.yml) runs on every push and pull request, every night and on demand:
