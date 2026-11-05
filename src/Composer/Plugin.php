@@ -194,12 +194,15 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
     private function createPhpStanConfig(): void
     {
-        $fileNames = ['phpstan.neon', 'phpstan-baseline.neon'];
-        foreach ($fileNames as $fileName) {
-            if (!file_exists(getcwd() . '/' . $fileName)) {
-                copy(dirname(__DIR__, 2) . '/' . $fileName, getcwd() . '/' . $fileName);
-                $this->message($fileName . ' file created', 'yellow');
-            }
+        if (!file_exists(getcwd() . '/phpstan.neon')) {
+            copy(dirname(__DIR__, 2) . '/phpstan.neon', getcwd() . '/phpstan.neon');
+            $this->message('phpstan.neon file created', 'yellow');
+        }
+
+        // new projects get an empty baseline, the baseline of this package lists errors of this package only
+        if (!file_exists(getcwd() . '/phpstan-baseline.neon')) {
+            file_put_contents(getcwd() . '/phpstan-baseline.neon', "parameters:\n\tignoreErrors: []\n");
+            $this->message('phpstan-baseline.neon file created', 'yellow');
         }
     }
 
