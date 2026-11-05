@@ -349,6 +349,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, tests and the 
 
 `pluswerk/grumphp-config` and most packages in this repository are licensed under the [GNU LGPL 3.0 or later](LICENSE.txt). `andersundsehr/rector-p` is licensed under the GPL 2.0 or later.
 
----
+# with ♥️ from anders und sehr GmbH
 
-Made by [anders und sehr GmbH](https://www.andersundsehr.com).
+> If something did not work 😮  
+> or you appreciate this Extension 🥰 let us know.
+
+> We are hiring https://www.andersundsehr.com/karriere/

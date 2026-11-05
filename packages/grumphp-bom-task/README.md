@@ -82,3 +82,10 @@ This package is developed in the monorepo [andersundsehr/grumphp-config](https:/
 ## License
 
 [LGPL-3.0-or-later](LICENSE.txt)
+
+# with ♥️ from anders und sehr GmbH
+
+> If something did not work 😮  
+> or you appreciate this Extension 🥰 let us know.
+
+> We are hiring https://www.andersundsehr.com/karriere/

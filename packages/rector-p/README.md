@@ -106,6 +106,9 @@ This package is developed in the monorepo [andersundsehr/grumphp-config](https:/
 
 GPL-2.0-or-later
 
----
+# with ♥️ from anders und sehr GmbH
 
-Made with ♥️ by [anders und sehr GmbH](https://www.andersundsehr.com). If something does not work or you like this tool, let us know. We are hiring: https://www.andersundsehr.com/karriere/
+> If something did not work 😮  
+> or you appreciate this Extension 🥰 let us know.
+
+> We are hiring https://www.andersundsehr.com/karriere/
