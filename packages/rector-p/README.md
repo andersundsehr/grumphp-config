@@ -39,9 +39,9 @@ vendor/bin/rector-p src/Controller/MyController.php src/Controller/MyOtherContro
 
 ### What happens
 
-1. `rector-p` loads `rector.php` from the current directory and collects the files from its `paths`, or from the paths you pass as arguments. The files are sorted by name.
-2. For each file it runs `rector process --dry-run <file>`, which shows the diff.
-3. If Rector has nothing to change, the file is marked as done. Otherwise you choose:
+1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. It collects the files from the configured `paths`, or from the paths you pass as arguments. The files are sorted by name.
+2. For each file it runs `rector process --dry-run <file>` with that configuration, which shows the diff.
+3. If Rector has nothing to change, the file is marked as done. If Rector fails, for example because of a broken configuration, `rector-p` stops with Rector's exit code. Otherwise you choose:
 
    | Answer | Effect |
    | --- | --- |
@@ -56,9 +56,10 @@ With `--no-interaction` (`-n`) every question is answered with the default, `exe
 
 ### Progress
 
-`rector-p` stores a SHA-256 hash of every file marked as done in `cache.json` inside its package directory (usually `vendor/andersundsehr/rector-p/cache.json`). A file is skipped as long as its content does not change.
+`rector-p` stores a SHA-256 hash of every file marked as done in its package directory (usually `vendor/andersundsehr/rector-p/`). A file is skipped as long as its content does not change.
 
-- Start from the beginning with `--startOver` (`-s`), for example after you added rules to `rector.php`.
+- Each Rector configuration has its own progress: `rector.php` in the current directory uses `cache.json`, every other configuration a `cache-<hash>.json`.
+- Start from the beginning with `--startOver` (`-s`), for example after you added rules to your configuration. This clears the progress of the current configuration only.
 - The progress is lost when Composer reinstalls the package.
 
 ### Chunks
@@ -70,7 +71,7 @@ vendor/bin/rector-p --chunk=1/4   # first quarter
 vendor/bin/rector-p --chunk=2/4   # second quarter
 ```
 
-After a chunk, `rector-p` prints the command for the next one.
+After a chunk, `rector-p` prints the command for the next one. It keeps the verbosity, `--config` and the paths you passed, so the next chunk works on the same file list.
 
 ## Options
 
@@ -93,10 +94,10 @@ Options:
   -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
 ```
 
-- `--config` is passed on to every Rector run, so the file list and the changes use the same configuration.
+- The configuration that was used for the file list is passed on to every Rector run, so the file list and the changes always use the same configuration.
 - With `-vv` `rector-p` prints every Rector command, with `-vvv` also how long it took.
-- `rector-p` calls `rector` from Composer's `vendor/bin` directory, or from your `PATH` if it cannot find it there.
-- If applying the changes to a file fails, `rector-p` stops with Rector's exit code.
+- `rector-p` calls `rector` from Composer's `vendor/bin` directory, or from your `PATH` if it cannot find it there. Paths with spaces are supported.
+- If Rector fails while checking or changing a file, `rector-p` stops with Rector's exit code.
 
 ## Contributing
 

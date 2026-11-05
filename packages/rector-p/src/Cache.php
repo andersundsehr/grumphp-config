@@ -9,6 +9,20 @@ use function hash_file;
 
 final class Cache
 {
+    private string $cacheFileName = 'cache.json';
+
+    /**
+     * every rector config has its own progress,
+     * rector.php in the current directory keeps cache.json, so the progress of older versions is kept
+     */
+    public function useConfigFile(?string $configFile): void
+    {
+        $this->cacheFileName = 'cache.json';
+        if ($configFile !== null && $configFile !== getcwd() . DIRECTORY_SEPARATOR . 'rector.php') {
+            $this->cacheFileName = 'cache-' . hash('sha256', $configFile) . '.json';
+        }
+    }
+
     public function setProcessed(string $fileName): void
     {
         $data = $this->getData();
@@ -24,12 +38,14 @@ final class Cache
 
     public function clear(): void
     {
-        unlink($this->getCacheFilePath());
+        if (file_exists($this->getCacheFilePath())) {
+            unlink($this->getCacheFilePath());
+        }
     }
 
     private function getCacheFilePath(): string
     {
-        return __DIR__ . '/../cache.json';
+        return __DIR__ . '/../' . $this->cacheFileName;
     }
 
     /**

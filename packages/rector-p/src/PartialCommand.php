@@ -12,8 +12,10 @@ use Rector\Bootstrap\RectorConfigsResolver;
 use Rector\Config\RectorConfig;
 use Rector\Configuration\Option;
 use Rector\Configuration\Parameter\SimpleParameterProvider;
+use Rector\Console\ExitCode;
 use Rector\DependencyInjection\RectorContainerFactory;
 use Rector\FileSystem\FilesFinder;
+use Rector\ValueObject\Bootstrap\BootstrapConfigs;
 use Rector\ValueObject\Configuration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -60,12 +62,16 @@ final class PartialCommand extends Command
         $this->input = $input;
         $this->output = $output;
 
+        $bootstrapConfigs = (new RectorConfigsResolver())->provide();
+        $this->configFile = $bootstrapConfigs->getMainConfigFile();
+        $this->cache->useConfigFile($this->configFile);
+
         if ($input->getOption('startOver')) {
             $this->output->writeln('Starting over (cleared the processed cache)');
             $this->cache->clear();
         }
 
-        $allFiles = $this->getAllFiles($this->input->getArgument(Option::SOURCE));
+        $allFiles = $this->getAllFiles($this->input->getArgument(Option::SOURCE), $bootstrapConfigs);
 
         $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
         if ($chunkConfig->chunkNumber === 1) {
@@ -85,31 +91,58 @@ final class PartialCommand extends Command
         if ($chunkConfig->chunkNumber === $chunkConfig->totalChunks) {
             $this->output->writeln('All chunks done');
         } else {
-            $verbosity = match ($output->getVerbosity()) {
-                // can remove defined check if Symfony 7.2 is lowest supported version:
-                defined(OutputInterface::class . '::VERBOSITY_SILENT') ? OutputInterface::VERBOSITY_SILENT : 8 => '--silent',
-                OutputInterface::VERBOSITY_QUIET => '-q',
-                OutputInterface::VERBOSITY_NORMAL => '',
-                OutputInterface::VERBOSITY_VERBOSE => ' -v',
-                OutputInterface::VERBOSITY_VERY_VERBOSE => ' -vv',
-                OutputInterface::VERBOSITY_DEBUG => ' -vvv',
-            };
-            $cmd = $_SERVER['argv'][0] . ' ' . $verbosity . ' --chunk ' . $chunkConfig->increaseChunk()->__toString();
-            $this->output->writeln('you can now start the next chunk:' . PHP_EOL . '<fg=gray>' . $cmd . '</>');
+            $this->output->writeln('you can now start the next chunk:' . PHP_EOL . '<fg=gray>' . $this->nextChunkCommand($chunkConfig) . '</>');
         }
 
         return self::SUCCESS;
     }
 
     /**
+     * the command for the next chunk keeps the verbosity, the config and the paths, so it works on the same file list
+     */
+    private function nextChunkCommand(ChunkConfig $chunkConfig): string
+    {
+        $parts = [$_SERVER['argv'][0]];
+
+        $verbosity = match ($this->output->getVerbosity()) {
+            // can remove defined check if Symfony 7.2 is lowest supported version:
+            defined(OutputInterface::class . '::VERBOSITY_SILENT') ? OutputInterface::VERBOSITY_SILENT : 8 => '--silent',
+            OutputInterface::VERBOSITY_QUIET => '-q',
+            OutputInterface::VERBOSITY_NORMAL => '',
+            OutputInterface::VERBOSITY_VERBOSE => '-v',
+            OutputInterface::VERBOSITY_VERY_VERBOSE => '-vv',
+            OutputInterface::VERBOSITY_DEBUG => '-vvv',
+        };
+        if ($verbosity !== '') {
+            $parts[] = $verbosity;
+        }
+
+        $configIsGiven = $this->input->getOption(Option::CONFIG) !== $this->getDefinition()->getOption(Option::CONFIG)->getDefault();
+        if ($configIsGiven && $this->configFile !== null) {
+            $parts[] = '--config=' . escapeshellarg($this->configFile);
+        }
+
+        $parts[] = '--chunk ' . $chunkConfig->increaseChunk()->__toString();
+
+        $sources = $this->input->getArgument(Option::SOURCE);
+        assert(is_array($sources));
+        if ($sources !== []) {
+            $parts[] = '--';
+            foreach ($sources as $source) {
+                assert(is_string($source));
+                $parts[] = escapeshellarg($source);
+            }
+        }
+
+        return implode(' ', $parts);
+    }
+
+    /**
      * @param list<string> $sources
      * @return list<string>
      */
-    private function getAllFiles(array $sources): array
+    private function getAllFiles(array $sources, BootstrapConfigs $bootstrapConfigs): array
     {
-        $bootstrapConfigs = (new RectorConfigsResolver())->provide();
-        $this->configFile = $bootstrapConfigs->getMainConfigFile();
-
         $configFunction = require $bootstrapConfigs->getMainConfigFile();
         if (is_callable($configFunction)) {
             $configFunction(new RectorConfig());
@@ -229,11 +262,24 @@ final class PartialCommand extends Command
      * Execute Commands
      */
 
+    /**
+     * @return bool true if rector has nothing to change in the file
+     */
     private function dryRunRector(string $file): bool
     {
         $this->output->writeln('<fg=white;bg=blue>Checking file ' . $file . ' ...</>');
         $exitCode = $this->runCommand($this->rectorCommand('--dry-run', $file));
-        return $exitCode === 0;
+        if ($exitCode === ExitCode::CHANGED_CODE) {
+            return false;
+        }
+
+        if ($exitCode !== ExitCode::SUCCESS) {
+            // e.g. a broken config or a file rector can not parse, this is no change that could be applied
+            $this->output->writeln('<error>Rector failed for ' . $file . ' with exit code ' . $exitCode . '</error>');
+            exit($exitCode);
+        }
+
+        return true;
     }
 
     private function executeRector(string $file): void
@@ -251,7 +297,7 @@ final class PartialCommand extends Command
      */
     private function rectorCommand(string $mode, string $file): string
     {
-        $command = $this->getBinPath() . 'rector process --ansi --no-progress-bar ' . $mode;
+        $command = escapeshellarg($this->getBinPath() . 'rector') . ' process --ansi --no-progress-bar ' . $mode;
         if ($this->configFile !== null) {
             $command .= ' --config=' . escapeshellarg($this->configFile);
         }
