@@ -31,6 +31,11 @@ final class PartialCommand extends Command
 
     private readonly float $startTime;
 
+    /**
+     * the rector config that was used to find the files (--config, rector.php or rector.dist.php)
+     */
+    private ?string $configFile = null;
+
     public function __construct(private readonly Cache $cache)
     {
         parent::__construct('partial');
@@ -103,6 +108,7 @@ final class PartialCommand extends Command
     private function getAllFiles(array $sources): array
     {
         $bootstrapConfigs = (new RectorConfigsResolver())->provide();
+        $this->configFile = $bootstrapConfigs->getMainConfigFile();
 
         $configFunction = require $bootstrapConfigs->getMainConfigFile();
         if (is_callable($configFunction)) {
@@ -241,16 +247,16 @@ final class PartialCommand extends Command
     }
 
     /**
-     * passes the --config option on, so every rector run uses the same config as the file list
+     * every rector run uses the config that was used to find the files
      */
     private function rectorCommand(string $mode, string $file): string
     {
-        $config = $this->input->getOption(Option::CONFIG);
-        assert(is_string($config));
+        $command = $this->getBinPath() . 'rector process --ansi --no-progress-bar ' . $mode;
+        if ($this->configFile !== null) {
+            $command .= ' --config=' . escapeshellarg($this->configFile);
+        }
 
-        return $this->getBinPath() . 'rector process --ansi --no-progress-bar ' . $mode
-            . ' --config=' . escapeshellarg($config)
-            . ' ' . escapeshellarg($file);
+        return $command . ' ' . escapeshellarg($file);
     }
 
     private function runCommand(string $command): int
