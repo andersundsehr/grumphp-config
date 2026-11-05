@@ -14,15 +14,15 @@ final readonly class ChunkConfig implements Stringable
         public int $totalChunks = 1,
     ) {
         if ($this->totalChunks < 1) {
-            throw new InvalidArgumentException('totalChunks must be greater than 0 give:' . $this);
+            throw new InvalidArgumentException('totalChunks must be greater than 0 give:' . $this, 1791530006);
         }
 
         if ($this->chunkNumber < 1) {
-            throw new InvalidArgumentException('chunkNumber must be between 1 and totalChunks give:' . $this);
+            throw new InvalidArgumentException('chunkNumber must be between 1 and totalChunks give:' . $this, 1791530007);
         }
 
         if ($this->chunkNumber > $this->totalChunks) {
-            throw new InvalidArgumentException('chunkNumber must be between 1 and totalChunks give:' . $this);
+            throw new InvalidArgumentException('chunkNumber must be between 1 and totalChunks give:' . $this, 1791530008);
         }
     }
 

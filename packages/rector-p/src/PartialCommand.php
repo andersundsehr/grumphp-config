@@ -114,7 +114,7 @@ final class PartialCommand extends Command
         } else {
             $paths = SimpleParameterProvider::provideArrayParameter(Option::PATHS);
             if (!$paths) {
-                throw new InvalidArgumentException('No paths found in configuration ' . $bootstrapConfigs->getMainConfigFile());
+                throw new InvalidArgumentException('No paths found in configuration ' . $bootstrapConfigs->getMainConfigFile(), 1791530003);
             }
         }
 
@@ -134,7 +134,7 @@ final class PartialCommand extends Command
 
         $totalFiles = count($allFiles);
         if ($totalFiles < $chunkConfig->totalChunks) {
-            throw new InvalidArgumentException('Total files ' . $totalFiles . ' is less than total chunks ' . $chunkConfig->totalChunks);
+            throw new InvalidArgumentException('Total files ' . $totalFiles . ' is less than total chunks ' . $chunkConfig->totalChunks, 1791530004);
         }
 
         $chunkSize = (int)ceil($totalFiles / $chunkConfig->totalChunks);
@@ -164,7 +164,7 @@ final class PartialCommand extends Command
             return new ChunkConfig((int)$matches[1], (int)$matches[2]);
         }
 
-        throw new InvalidArgumentException('Invalid chunk config given ' . $chunk);
+        throw new InvalidArgumentException('Invalid chunk config given ' . $chunk, 1791530005);
     }
 
     /**

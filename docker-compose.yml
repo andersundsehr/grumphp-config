@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   web:
-    image: ghcr.io/pluswerk/php-dev:nginx-8.2-alpine
+    image: ghcr.io/pluswerk/php-dev:nginx-8.5-alpine
 
     volumes:
       - .:/app
