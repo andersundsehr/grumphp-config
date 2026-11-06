@@ -1,4 +1,0 @@
-.ddev/ export-ignore
-.github/ export-ignore
-packages/ export-ignore
-docker-compose.yml export-ignore

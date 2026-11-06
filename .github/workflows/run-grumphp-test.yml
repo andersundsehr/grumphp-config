@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: ['grumphp-bom-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
+        package: ['grumphp-bom-task', 'grumphp-fractor-task', 'grumphp-xliff-task', 'phpstan-git-files', 'rector-p']
         php: ['8.2', '8.3', '8.4', '8.5']
         include:
           - php: '8.5'
