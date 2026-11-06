@@ -126,6 +126,40 @@ final class RectorPTest extends TestCase
         self::assertStringContainsString('[$a, $b] = $arr;', $this->source('B'));
     }
 
+    public function testChunksCoverAllFilesAfterRectorCachedTheFirstChunk(): void
+    {
+        // the first chunk has nothing to change, so rector caches its files as unchanged
+        foreach (['A Space' => 'fA', 'B' => 'fB'] as $fileName => $functionName) {
+            $source = str_replace('list($a, $b) = $arr;', '[$a, $b] = $arr;', sprintf(self::SOURCE, $functionName));
+            file_put_contents($this->projectDirectory . '/src/' . $fileName . '.php', $source);
+        }
+
+        file_put_contents($this->projectDirectory . '/src/C.php', sprintf(self::SOURCE, 'fC'));
+        file_put_contents($this->projectDirectory . '/src/D.php', sprintf(self::SOURCE, 'fD'));
+
+        // without paths on the command line rector-p uses the paths of the config
+        $firstChunk = $this->runRectorP(['-c', 'custom.php', '--chunk', '1/2']);
+        self::assertSame(0, $firstChunk['exitCode'], $firstChunk['output']);
+
+        $arguments = $this->splitShellArguments($this->nextChunkCommand($firstChunk['output']));
+        $secondChunk = $this->runRectorP(array_slice($arguments, 1));
+        self::assertSame(0, $secondChunk['exitCode'], $secondChunk['output']);
+
+        foreach (['A Space', 'B', 'C', 'D'] as $fileName) {
+            self::assertStringContainsString('[$a, $b] = $arr;', $this->source($fileName), $fileName . ' was skipped');
+        }
+    }
+
+    public function testEmptyFileListIsNoError(): void
+    {
+        mkdir($this->projectDirectory . '/empty');
+
+        $result = $this->runRectorP(['empty']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('No files found', $result['output']);
+    }
+
     public function testProgressIsKeptPerConfig(): void
     {
         self::assertSame(2, $this->checkedFiles(['-c', 'custom.php']));
@@ -157,18 +191,21 @@ final class RectorPTest extends TestCase
         // rector-p calls rector from the PATH if it is not started from vendor/bin
         $environment['PATH'] = $packageDirectory . '/vendor/bin' . PATH_SEPARATOR . ($environment['PATH'] ?? '');
 
+        // stdout and stderr go to the same file, so the output keeps its order
+        $outputFile = dirname($this->projectDirectory) . '/output.txt';
         $process = proc_open(
             [PHP_BINARY, $packageDirectory . '/rector-p', '--no-interaction', '--no-ansi', ...$arguments],
-            [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['redirect', 1]],
+            [0 => ['file', '/dev/null', 'r'], 1 => ['file', $outputFile, 'a'], 2 => ['file', $outputFile, 'a']],
             $pipes,
             $this->projectDirectory,
             $environment,
         );
         self::assertIsResource($process);
-        $output = (string)stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
+        $exitCode = proc_close($process);
+        $output = (string)file_get_contents($outputFile);
+        unlink($outputFile);
 
-        return ['exitCode' => proc_close($process), 'output' => $output];
+        return ['exitCode' => $exitCode, 'output' => $output];
     }
 
     private function nextChunkCommand(string $output): string
@@ -206,7 +243,7 @@ final class RectorPTest extends TestCase
      */
     private function cacheFiles(): array
     {
-        return glob(dirname(__DIR__) . '/cache*.json') ?: [];
+        return glob(__DIR__ . '/../cache*.json') ?: [];
     }
 
     private function removeDirectory(string $directory): void

@@ -72,6 +72,10 @@ final class PartialCommand extends Command
         }
 
         $allFiles = $this->getAllFiles($this->input->getArgument(Option::SOURCE), $bootstrapConfigs);
+        if ($allFiles === []) {
+            $this->output->writeln('No files found');
+            return self::SUCCESS;
+        }
 
         $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
         if ($chunkConfig->chunkNumber === 1) {
@@ -160,7 +164,9 @@ final class PartialCommand extends Command
         $rectorContainer = (new RectorContainerFactory())->createFromBootstrapConfigs($bootstrapConfigs);
         $filesFinder = $rectorContainer->get(FilesFinder::class);
 
-        return $filesFinder->findFilesInPaths($paths, new Configuration(shouldClearCache: false));
+        // rector leaves out files that its result cache marks as unchanged, so the list would depend on earlier runs
+        // and the chunks would shift. rector-p needs all files: its own progress decides which files are left.
+        return $filesFinder->findFilesInPaths($paths, new Configuration(shouldClearCache: true));
     }
 
     /**
