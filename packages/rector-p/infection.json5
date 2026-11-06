@@ -7,6 +7,8 @@
         "text": "var/infection/infection.log",
         "summary": "var/infection/summary.log"
     },
+    // the tests start real rector runs, so a single test takes some seconds
+    "timeout": 120,
     "mutators": {
         "@default": true
     },
