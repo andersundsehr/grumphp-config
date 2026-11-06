@@ -57,6 +57,21 @@ final class CacheTest extends TestCase
 
         $cache->useConfigFile('/project/rector-a.php');
         self::assertTrue($cache->isProcessed($this->file), 'clear() must only remove the progress of the current config');
+        self::assertFileExists($this->directory . '/cache-' . hash('sha256', '/project/rector-a.php') . '.json');
+    }
+
+    public function testStoresTheProgressInThePackageDirectoryByDefault(): void
+    {
+        $configFile = '/project/rector-' . bin2hex(random_bytes(8)) . '.php';
+        $expectedFile = __DIR__ . '/../cache-' . hash('sha256', $configFile) . '.json';
+        $cache = new Cache();
+        $cache->useConfigFile($configFile);
+
+        $cache->setProcessed($this->file);
+        self::assertFileExists($expectedFile);
+
+        $cache->clear();
+        self::assertFileDoesNotExist($expectedFile);
     }
 
     public function testRectorPhpInTheCurrentDirectoryKeepsCacheJson(): void

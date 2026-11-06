@@ -6,6 +6,7 @@ namespace Andersundsehr\RectorP;
 
 use Andersundsehr\RectorP\Dto\ChunkConfig;
 use Andersundsehr\RectorP\Dto\Task;
+use Andersundsehr\RectorP\Exception\StopException;
 use Andersundsehr\RectorP\Helper\TimeHelper;
 use InvalidArgumentException;
 use Rector\Bootstrap\RectorConfigsResolver;
@@ -89,7 +90,15 @@ final class PartialCommand extends Command
             $this->output->writeln('Files ' . count($chunkedFiles) . ' of ' . count($allFiles));
         }
 
-        $this->workOnFiles($chunkedFiles);
+        try {
+            $this->workOnFiles($chunkedFiles);
+        } catch (StopException $stopException) {
+            if ($stopException->getMessage() !== '') {
+                $this->output->writeln('<error>' . $stopException->getMessage() . '</error>');
+            }
+
+            return $stopException->exitCode;
+        }
 
         $this->output->writeln('Done with chunk ' . $chunkConfig->chunkNumber . ' of ' . $chunkConfig->totalChunks);
         if ($chunkConfig->chunkNumber === $chunkConfig->totalChunks) {
@@ -247,8 +256,8 @@ final class PartialCommand extends Command
         match ($this->askTask($file)) {
             Task::execute => $this->executeRector($file),
             Task::retry => $this->workOnFile($file),
-            Task::skipFile => false,
-            Task::quit => exit(0),
+            Task::skipFile => null,
+            Task::quit => throw new StopException(self::SUCCESS),
         };
     }
 
@@ -281,8 +290,7 @@ final class PartialCommand extends Command
 
         if ($exitCode !== ExitCode::SUCCESS) {
             // e.g. a broken config or a file rector can not parse, this is no change that could be applied
-            $this->output->writeln('<error>Rector failed for ' . $file . ' with exit code ' . $exitCode . '</error>');
-            exit($exitCode);
+            throw new StopException($exitCode, 'Rector failed for ' . $file . ' with exit code ' . $exitCode);
         }
 
         return true;
@@ -291,8 +299,8 @@ final class PartialCommand extends Command
     private function executeRector(string $file): void
     {
         $exitCode = $this->runCommand($this->rectorCommand('--no-diffs', $file));
-        if ($exitCode) {
-            exit($exitCode);
+        if ($exitCode !== ExitCode::SUCCESS) {
+            throw new StopException($exitCode, 'Rector failed for ' . $file . ' with exit code ' . $exitCode);
         }
 
         $this->cache->setProcessed($file);

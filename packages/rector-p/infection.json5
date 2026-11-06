@@ -1,0 +1,15 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"]
+    },
+    "logs": {
+        "text": "var/infection/infection.log",
+        "summary": "var/infection/summary.log"
+    },
+    "mutators": {
+        "@default": true
+    },
+    // run with --with-uncovered, so code without tests counts as well
+    "minMsi": 70
+}
