@@ -42,6 +42,7 @@
     "andersundsehr/phpstan-git-files": "dev-main as 11.0.0",
     "andersundsehr/rector-p": "dev-main as 11.0.0",
     "composer/composer": "^2.8.5",
+    "phpunit/phpunit": "^11.5.0 || ^12.0.0",
     "pluswerk/grumphp-bom-task": "dev-main as 11.0.0",
     "pluswerk/grumphp-xliff-task": "dev-main as 11.0.0",
     "roave/security-advisories": "dev-latest",

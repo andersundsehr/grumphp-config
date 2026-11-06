@@ -12,6 +12,13 @@ final class Cache
     private string $cacheFileName = 'cache.json';
 
     /**
+     * @param string $directory where the progress is stored, the package directory by default
+     */
+    public function __construct(private readonly string $directory = __DIR__ . '/..')
+    {
+    }
+
+    /**
      * every rector config has its own progress,
      * rector.php in the current directory keeps cache.json, so the progress of older versions is kept
      */
@@ -45,7 +52,7 @@ final class Cache
 
     private function getCacheFilePath(): string
     {
-        return __DIR__ . '/../' . $this->cacheFileName;
+        return $this->directory . '/' . $this->cacheFileName;
     }
 
     /**
