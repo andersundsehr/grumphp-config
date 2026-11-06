@@ -12,6 +12,5 @@
     "mutators": {
         "@default": true
     },
-    // run with --with-uncovered, so code without tests counts as well
     "minMsi": 70
 }
