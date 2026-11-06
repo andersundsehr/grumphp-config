@@ -492,6 +492,18 @@ final class PartialCommandTest extends TestCase
         self::assertStringContainsString(PHP_EOL . "'/my project/vendor/bin/rector-p' --chunk 2/2" . PHP_EOL, $result['output']);
     }
 
+    public function testUsesAllPathsOfTheConfig(): void
+    {
+        mkdir($this->project->directory . '/lib');
+        file_put_contents($this->project->directory . '/lib/C.php', "<?php\n");
+        $this->writePathsConfig(['src', 'lib']);
+
+        $result = $this->runRectorP(['-c', 'paths.php']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Total files 3', $result['output']);
+    }
+
     public function testRectorChecksThePathsOfTheConfig(): void
     {
         $this->writePathsConfig(['src', 'lib']);
