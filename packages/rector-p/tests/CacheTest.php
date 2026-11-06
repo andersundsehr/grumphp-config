@@ -67,10 +67,14 @@ final class CacheTest extends TestCase
         $cache = new Cache();
         $cache->useConfigFile($configFile);
 
-        $cache->setProcessed($this->file);
-        self::assertFileExists($expectedFile);
+        try {
+            $cache->setProcessed($this->file);
+            self::assertFileExists($expectedFile);
+        } finally {
+            // removes the file wherever it was written, also when the assertion failed
+            $cache->clear();
+        }
 
-        $cache->clear();
         self::assertFileDoesNotExist($expectedFile);
     }
 
