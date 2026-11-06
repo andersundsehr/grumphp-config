@@ -469,8 +469,8 @@ final class PartialCommandTest extends TestCase
         $this->project->writeSource('A Space', true);
         $this->project->writeSource('B', true);
         $this->project->writeSource('C');
-        // the real rector caches A Space and B as unchanged
-        $this->runRealRector(['process', '--dry-run', '--no-progress-bar', '--config=custom.php']);
+        // the real rector caches A Space and B as unchanged, C has changes
+        self::assertSame(2, $this->runRealRector(['process', '--dry-run', '--no-progress-bar', '--config=custom.php']));
         $rectorCacheFiles = $this->filesIn($this->project->directory . '/var/rector-cache');
         self::assertNotSame([], $rectorCacheFiles);
         $temporaryDirectories = glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [];
@@ -549,17 +549,20 @@ final class PartialCommandTest extends TestCase
 
     /**
      * @param list<string> $arguments
+     * @return int the exit code
      */
-    private function runRealRector(array $arguments): void
+    private function runRealRector(array $arguments): int
     {
         $process = proc_open(
             [PHP_BINARY, (string)realpath(__DIR__ . '/../vendor/bin/rector'), ...$arguments],
-            [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            // all descriptors are given: under Infection the test process has no usable stdin
+            [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
             $pipes,
             $this->project->directory,
         );
         self::assertIsResource($process);
-        proc_close($process);
+
+        return proc_close($process);
     }
 
     /**

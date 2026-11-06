@@ -90,6 +90,16 @@ final class CacheTest extends TestCase
         self::assertFileExists($this->directory . '/cache.json');
     }
 
+    public function testProgressFileIsReadable(): void
+    {
+        $cache = new Cache($this->directory);
+        $cache->useConfigFile('/project/rector-a.php');
+        $cache->setProcessed($this->file);
+
+        $expected = "{\n    \"" . $this->file . '": "' . hash_file('sha256', $this->file) . "\"\n}";
+        self::assertSame($expected, file_get_contents($this->directory . '/cache-' . hash('sha256', '/project/rector-a.php') . '.json'));
+    }
+
     public function testFileNameThatIsNotUtf8Throws(): void
     {
         $file = $this->directory . "/\xff.php";
