@@ -7,8 +7,10 @@ namespace Andersundsehr\RectorP\Tests;
 use Andersundsehr\RectorP\Dto\ChunkConfig;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(ChunkConfig::class)]
 final class ChunkConfigTest extends TestCase
 {
     public function testDefaultIsOneChunk(): void

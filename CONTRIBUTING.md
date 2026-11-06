@@ -101,6 +101,7 @@ composer remove --dev --no-plugins --no-scripts infection/infection
 - `infection.json5` sets the minimum score (`minMsi`); the run fails below it. If your change raises the score, raise `minMsi` to the new value, rounded down. Do not lower it.
 - The escaped mutants are listed in `var/infection/infection.log`. Add or sharpen tests for real gaps. Equivalent or cosmetic mutants, for example the JSON formatting flags in `Cache`, do not need to be killed.
 - The tests run `PartialCommand` in the test process. Code in `src/` must not call `exit()`; throw `StopException` instead, otherwise Infection cannot test it.
+- Every test class declares what it tests with `#[CoversClass]` (`phpunit.xml.dist` requires it). Then a mutation in a small class like `Cache` only runs its fast unit tests, and not the slow `PartialCommandTest` with its Rector runs. Tests that only start the binary use `#[CoversNothing]`.
 
 Everything:
 

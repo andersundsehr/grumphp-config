@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Andersundsehr\RectorP\Tests;
 
 use Andersundsehr\RectorP\Cache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(Cache::class)]
 final class CacheTest extends TestCase
 {
     private string $directory;

@@ -6,9 +6,12 @@ namespace Andersundsehr\RectorP\Tests;
 
 use Rector\Config\RectorConfig;
 use Andersundsehr\RectorP\Cache;
+use Andersundsehr\RectorP\Exception\StopException;
+use Andersundsehr\RectorP\PartialCommand;
 use Andersundsehr\RectorP\RectorPApplication;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Rector\Configuration\Option;
 use Rector\Configuration\Parameter\SimpleParameterProvider;
@@ -19,6 +22,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * runs the partial command in this process, with real rector runs on a small project
  */
+#[CoversClass(PartialCommand::class)]
+#[CoversClass(StopException::class)]
 final class PartialCommandTest extends TestCase
 {
     private ProjectFixture $project;

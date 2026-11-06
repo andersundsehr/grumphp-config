@@ -6,8 +6,10 @@ namespace Andersundsehr\RectorP\Tests;
 
 use Andersundsehr\RectorP\PartialCommand;
 use Andersundsehr\RectorP\RectorPApplication;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(RectorPApplication::class)]
 final class RectorPApplicationTest extends TestCase
 {
     public function testPartialIsTheOnlyCommand(): void

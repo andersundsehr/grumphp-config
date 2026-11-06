@@ -5,7 +5,8 @@
          cacheDirectory="var/phpunit-cache"
          colors="true"
          failOnRisky="true"
-         failOnWarning="true">
+         failOnWarning="true"
+         requireCoverageMetadata="true">
     <testsuites>
         <testsuite name="rector-p">
             <directory>tests</directory>

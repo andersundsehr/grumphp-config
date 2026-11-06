@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Andersundsehr\RectorP\Tests;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
 /**
  * runs the rector-p binary in its own process, like a user in a shell
  */
+#[CoversNothing]
 final class RectorPBinaryTest extends TestCase
 {
     private ProjectFixture $project;

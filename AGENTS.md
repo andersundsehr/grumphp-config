@@ -18,3 +18,4 @@ When you change code or tests in `packages/rector-p`:
 3. The score must stay at or above `minMsi` in `packages/rector-p/infection.json5`. If it went up, raise `minMsi` to the new value, rounded down. Never lower it.
 4. Read the escaped mutants in `var/infection/infection.log`. Write or sharpen tests for real gaps. Equivalent or purely cosmetic mutants do not need to be killed.
 5. Do not call `exit()` in `src/`; throw `StopException`. The tests run `PartialCommand` in the test process.
+6. Every test class needs `#[CoversClass]` for the class it tests (`#[CoversNothing]` for tests that only start the binary). This keeps Infection fast.

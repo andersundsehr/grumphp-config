@@ -6,8 +6,10 @@ namespace Andersundsehr\RectorP\Tests;
 
 use Andersundsehr\RectorP\Helper\TimeHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(TimeHelper::class)]
 final class TimeHelperTest extends TestCase
 {
     /**
