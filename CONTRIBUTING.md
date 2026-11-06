@@ -82,6 +82,8 @@ vendor/bin/grumphp run
 
 The copy of `pluswerk/grumphp-config` in the package's `vendor/` is only refreshed by `composer update`. Run it again after you change files in the root.
 
+`rector-p` has PHPUnit tests in `packages/rector-p/tests`. Its `grumphp.yml` adds the `phpunit` task, so `vendor/bin/grumphp run` in `packages/rector-p` runs them too. PHPUnit is also a dev dependency of the root, because PHPStan and Rector in the root check the test files.
+
 Everything:
 
 ```bash
