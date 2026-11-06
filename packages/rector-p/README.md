@@ -39,7 +39,9 @@ vendor/bin/rector-p src/Controller/MyController.php src/Controller/MyOtherContro
 
 ### What happens
 
-1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. It collects the files from the configured `paths`, or from the paths you pass as arguments. The files are sorted by name.
+1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. Without a configuration it stops with an error. It collects the files from the configured `paths`, or from the paths you pass as arguments, with the file extensions of the configuration (`withFileExtensions()`). Like in Rector, a path with `*` is a glob pattern; a path you pass that matches nothing stops `rector-p` with an error. The files are sorted by name. If there are no files, it stops with `No files found`.
+
+   For this list `rector-p` uses an empty cache of its own instead of Rector's result cache. Otherwise Rector would leave out files it already checked, and the list and the chunks would change from run to run. Rector's result cache stays as it is. Which files are left to do is decided by the progress of `rector-p` (see below).
 2. For each file it runs `rector process --dry-run <file>` with that configuration, which shows the diff.
 3. If Rector has nothing to change, the file is marked as done. If Rector fails, for example because of a broken configuration, `rector-p` stops with Rector's exit code. Otherwise you choose:
 
@@ -102,6 +104,15 @@ Options:
 ## Contributing
 
 This package is developed in the monorepo [andersundsehr/grumphp-config](https://github.com/andersundsehr/grumphp-config/tree/main/packages/rector-p). Please open issues and pull requests there.
+
+The tests in `tests/` run `rector-p` against small temporary projects. Most of them use a fake Rector (`tests/Fixture/bin/rector`) that answers in milliseconds, a few use the real Rector. They run as part of `vendor/bin/grumphp run` in this package, or alone:
+
+```bash
+composer install
+vendor/bin/phpunit
+```
+
+Infection checks the tests with mutation testing; `infection.json5` sets the minimum score. See [Mutation testing in CONTRIBUTING.md](https://github.com/andersundsehr/grumphp-config/blob/main/CONTRIBUTING.md#mutation-testing-rector-p) for how to run it.
 
 ## License
 

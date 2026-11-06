@@ -12,6 +12,13 @@ final class Cache
     private string $cacheFileName = 'cache.json';
 
     /**
+     * @param string $directory where the progress is stored, the package directory by default
+     */
+    public function __construct(private readonly string $directory = __DIR__ . '/..')
+    {
+    }
+
+    /**
      * every rector config has its own progress,
      * rector.php in the current directory keeps cache.json, so the progress of older versions is kept
      */
@@ -21,6 +28,14 @@ final class Cache
         if ($configFile !== null && $configFile !== getcwd() . DIRECTORY_SEPARATOR . 'rector.php') {
             $this->cacheFileName = 'cache-' . hash('sha256', $configFile) . '.json';
         }
+    }
+
+    /**
+     * a path for a temporary directory next to the progress, the caller creates and removes the directory
+     */
+    public function temporaryDirectory(): string
+    {
+        return $this->directory . '/tmp-' . bin2hex(random_bytes(8));
     }
 
     public function setProcessed(string $fileName): void
@@ -45,7 +60,7 @@ final class Cache
 
     private function getCacheFilePath(): string
     {
-        return __DIR__ . '/../' . $this->cacheFileName;
+        return $this->directory . '/' . $this->cacheFileName;
     }
 
     /**

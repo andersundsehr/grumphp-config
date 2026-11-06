@@ -21,6 +21,7 @@
   "require-dev": {
     "andersundsehr/grumphp-fractor-task": "@dev",
     "andersundsehr/phpstan-git-files": "@dev",
+    "phpunit/phpunit": "^11.5.0 || ^12.0.0",
     "pluswerk/grumphp-bom-task": "@dev",
     "pluswerk/grumphp-config": "@dev",
     "pluswerk/grumphp-xliff-task": "@dev"
@@ -46,6 +47,11 @@
   "autoload": {
     "psr-4": {
       "Andersundsehr\\RectorP\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Andersundsehr\\RectorP\\Tests\\": "tests/"
     }
   },
   "bin": [

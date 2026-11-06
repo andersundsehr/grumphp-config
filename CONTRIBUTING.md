@@ -82,6 +82,29 @@ vendor/bin/grumphp run
 
 The copy of `pluswerk/grumphp-config` in the package's `vendor/` is only refreshed by `composer update`. Run it again after you change files in the root.
 
+`rector-p` has PHPUnit tests in `packages/rector-p/tests`. Its `grumphp.yml` adds the `phpunit` task, so `vendor/bin/grumphp run` in `packages/rector-p` runs them too. PHPUnit is also a dev dependency of the root, because PHPStan and Rector in the root check the test files.
+
+### Mutation testing (rector-p)
+
+[Infection](https://infection.github.io/) checks whether the `rector-p` tests notice changes in the code. Run it whenever you change code or tests in `packages/rector-p`:
+
+```bash
+cd packages/rector-p
+composer require --dev --no-plugins --no-scripts infection/infection
+vendor/bin/infection --threads=max --only-covering-test-cases
+composer remove --dev --no-plugins --no-scripts infection/infection
+```
+
+- Infection needs PHP 8.3 or newer and PCOV or Xdebug. It is not a dev dependency in `composer.json`, because `rector-p` still supports PHP 8.2.
+- Use the default settings and do not pass `--with-uncovered`.
+- `--only-covering-test-cases` runs only the test methods that cover a mutation, instead of the whole test class.
+- `infection.json5` sets the minimum score (`minMsi`); the run fails below it. If your change raises the score, raise `minMsi` to the new value, rounded down. Do not lower it.
+- The escaped mutants are listed in `var/infection/infection.log`. Add or sharpen tests for real gaps. Equivalent or cosmetic mutants do not need to be killed. With `--log-verbosity=all` the log also shows why each killed mutant failed; check it after adding tests, a test that fails for its own reason kills mutants by mistake.
+- `infection.json5` lists mutations that Infection does not run at all: cosmetic ones (style tags, the time estimate, the duration printed with `-vvv`) and ones that can not change the behaviour. Each entry has a comment why. The summary counts them as `Ignored`, they do not count in the score. Keep the entries narrow, one line or one method for one mutator, because an entry also hides the useful mutations it matches.
+- Most tests in `PartialCommandTest` use a fake Rector, `tests/Fixture/bin/rector`. It answers in milliseconds instead of about a second and logs its arguments. Only the `testRealRector…` tests, `testListsAllFilesWithoutTouchingTheResultCacheOfRector` (it fills Rector's cache) and `RectorPBinaryTest` start the real Rector. Use the fake for new tests of rector-p's own logic and the real Rector only for tests about working with Rector.
+- The tests run `PartialCommand` in the test process. Code in `src/` must not call `exit()`; throw `StopException` instead, otherwise Infection cannot test it.
+- Every test class declares what it tests with `#[CoversClass]` (`phpunit.xml.dist` requires it). Then a mutation in a small class like `Cache` only runs its fast unit tests, and not the slower `PartialCommandTest`. Tests that only start the binary use `#[CoversNothing]`.
+
 Everything:
 
 ```bash

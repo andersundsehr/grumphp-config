@@ -1,0 +1,72 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"]
+    },
+    "logs": {
+        "text": "var/infection/infection.log",
+        "summary": "var/infection/summary.log"
+    },
+    // a few tests start the real rector, they take some seconds
+    "timeout": 120,
+    "mutators": {
+        "@default": true,
+        // Mutations that only change cosmetic output or that can not change the behaviour are not run.
+        // They are listed as "Ignored" in var/infection/summary.log and do not count in the score.
+        // The regular expressions are matched against a whole line of the original code.
+        "global-ignoreSourceCodeByRegex": [
+            // the estimate of the time left, printed after every file
+            "\\$timeCountMax--;",
+            "\\$durationTotal = microtime\\(true\\) - \\$this->startTime;",
+            "\\$timePerFile = \\$durationTotal / \\(\\+\\+\\$timeIndex\\);",
+            "\\$timeLeft = \\$timePerFile \\* \\(\\$timeCountMax - \\$timeIndex\\);",
+            "\\$timePart = '<options=bold>~' \\. TimeHelper::secondsToHuman\\(\\(int\\)ceil\\(\\$timeLeft\\)\\) \\. '</>';",
+            // the duration of a rector run, printed with -vvv
+            "\\$duration = microtime\\(true\\) - \\$startTime;",
+            // the name of a temporary directory; mutations create directories elsewhere, e.g. in /
+            "return \\$this->directory \\. '/tmp-' \\. bin2hex\\(random_bytes\\(8\\)\\);",
+        ],
+        "Concat": {
+            // the default of --config is only shown in --help
+            "ignore": ["Andersundsehr\\RectorP\\PartialCommand::configure"],
+            "ignoreSourceCodeByRegex": [
+                // swaps the style tags around a single value, e.g. writeln('<fg=gray>' . $command . '</>')
+                "\\$this->output->writeln\\('<(error|fg=gray)>' \\. [^.]+ \\. '</(error)?>'(, OutputInterface::VERBOSITY_\\w+)?\\);",
+                // the fallback for Symfony < 7.2, VERBOSITY_SILENT is 8 as well
+                ".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*",
+            ],
+        },
+        "ConcatOperandRemoval": {
+            "ignore": ["Andersundsehr\\RectorP\\PartialCommand::configure"],
+            "ignoreSourceCodeByRegex": [".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*"],
+        },
+        "Ternary": {
+            "ignoreSourceCodeByRegex": [".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*"],
+        },
+        "IncrementInteger": {
+            "ignoreSourceCodeByRegex": [
+                ".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*",
+                // the precision of the printed duration
+                ".*round\\(\\$duration, 3\\).*",
+            ],
+        },
+        "DecrementInteger": {
+            "ignoreSourceCodeByRegex": [
+                ".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*",
+                ".*round\\(\\$duration, 3\\).*",
+            ],
+        },
+        "RoundingFamily": {
+            "ignoreSourceCodeByRegex": [".*round\\(\\$duration, 3\\).*"],
+        },
+        "CastInt": {
+            // ceil() returns a whole number, PHP uses it as array index with or without the cast
+            "ignoreSourceCodeByRegex": ["\\$chunkSize = \\(int\\)ceil\\(.*"],
+        },
+        "UnwrapArrayFilter": {
+            // isProcessed() compares with ===, so a value that is not a string never matches either way
+            "ignore": ["Andersundsehr\\RectorP\\Cache::getData"],
+        },
+    },
+    "minMsi": 96
+}
