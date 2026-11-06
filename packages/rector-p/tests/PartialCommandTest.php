@@ -229,7 +229,7 @@ final class PartialCommandTest extends TestCase
 
     public function testChunksCoverAllFilesAfterRectorCachedTheFirstChunk(): void
     {
-        // the first chunk has nothing to change, so rector caches its files as unchanged
+        // the effect of rector's result cache only shows with separate processes, see RectorPBinaryTest
         $this->project->writeSource('A Space', true);
         $this->project->writeSource('B', true);
         $this->project->writeSource('C');

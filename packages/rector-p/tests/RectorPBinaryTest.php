@@ -57,6 +57,28 @@ final class RectorPBinaryTest extends TestCase
     }
 
     /**
+     * rector's result cache must not shorten the file list of the next chunk.
+     * This only shows with separate processes, so it is tested with the binary.
+     */
+    public function testChunksCoverAllFilesAfterRectorCachedTheFirstChunk(): void
+    {
+        // the first chunk has nothing to change, so rector caches its files as unchanged
+        $this->project->writeSource('A Space', true);
+        $this->project->writeSource('B', true);
+        $this->project->writeSource('C');
+        $this->project->writeSource('D');
+
+        $firstChunk = $this->runBinary(['-c', 'custom.php', '--chunk', '1/2']);
+        self::assertSame(0, $firstChunk['exitCode'], $firstChunk['output']);
+
+        $secondChunk = $this->runBinary(['-c', 'custom.php', '--chunk', '2/2']);
+        self::assertSame(0, $secondChunk['exitCode'], $secondChunk['output']);
+        self::assertStringContainsString('Files 2 of 4', $secondChunk['output']);
+        self::assertTrue($this->project->isListConverted('C'), 'C was skipped');
+        self::assertTrue($this->project->isListConverted('D'));
+    }
+
+    /**
      * @param list<string> $arguments
      * @return array{exitCode: int, output: string}
      */
