@@ -112,6 +112,8 @@ composer install
 vendor/bin/phpunit
 ```
 
+Infection checks the tests with mutation testing; `infection.json5` sets the minimum score. See [Mutation testing in CONTRIBUTING.md](https://github.com/andersundsehr/grumphp-config/blob/main/CONTRIBUTING.md#mutation-testing-rector-p) for how to run it.
+
 ## License
 
 GPL-2.0-or-later

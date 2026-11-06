@@ -9,3 +9,5 @@
 /split.sh export-ignore
 /phpstan-baseline.neon export-ignore
 /phpstan-baseline-without-typo3.neon export-ignore
+/AGENTS.md export-ignore
+/CLAUDE.md export-ignore

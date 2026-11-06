@@ -84,6 +84,24 @@ The copy of `pluswerk/grumphp-config` in the package's `vendor/` is only refresh
 
 `rector-p` has PHPUnit tests in `packages/rector-p/tests`. Its `grumphp.yml` adds the `phpunit` task, so `vendor/bin/grumphp run` in `packages/rector-p` runs them too. PHPUnit is also a dev dependency of the root, because PHPStan and Rector in the root check the test files.
 
+### Mutation testing (rector-p)
+
+[Infection](https://infection.github.io/) checks whether the `rector-p` tests notice changes in the code. Run it whenever you change code or tests in `packages/rector-p`:
+
+```bash
+cd packages/rector-p
+composer require --dev --no-plugins --no-scripts infection/infection
+vendor/bin/infection --threads=max --only-covering-test-cases
+composer remove --dev --no-plugins --no-scripts infection/infection
+```
+
+- Infection needs PHP 8.3 or newer and PCOV or Xdebug. It is not a dev dependency in `composer.json`, because `rector-p` still supports PHP 8.2.
+- Use the default settings and do not pass `--with-uncovered`.
+- `--only-covering-test-cases` runs only the test methods that cover a mutation. The tests start real Rector runs, so this saves a lot of time.
+- `infection.json5` sets the minimum score (`minMsi`); the run fails below it. If your change raises the score, raise `minMsi` to the new value, rounded down. Do not lower it.
+- The escaped mutants are listed in `var/infection/infection.log`. Add or sharpen tests for real gaps. Equivalent or cosmetic mutants, for example the JSON formatting flags in `Cache`, do not need to be killed.
+- The tests run `PartialCommand` in the test process. Code in `src/` must not call `exit()`; throw `StopException` instead, otherwise Infection cannot test it.
+
 Everything:
 
 ```bash
