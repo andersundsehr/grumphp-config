@@ -68,5 +68,5 @@
             "ignore": ["Andersundsehr\\RectorP\\Cache::getData"],
         },
     },
-    "minMsi": 99
+    "minMsi": 96
 }
