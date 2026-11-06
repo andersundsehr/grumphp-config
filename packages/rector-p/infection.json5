@@ -23,6 +23,8 @@
             "\\$timePart = '<options=bold>~' \\. TimeHelper::secondsToHuman\\(\\(int\\)ceil\\(\\$timeLeft\\)\\) \\. '</>';",
             // the duration of a rector run, printed with -vvv
             "\\$duration = microtime\\(true\\) - \\$startTime;",
+            // the name of the temporary cache directory for the file list; mutations create directories elsewhere, e.g. in /
+            "\\$cacheDirectory = sys_get_temp_dir\\(\\) \\. '/rector-p-file-list-' \\. bin2hex\\(random_bytes\\(8\\)\\);",
         ],
         "Concat": {
             // the default of --config is only shown in --help

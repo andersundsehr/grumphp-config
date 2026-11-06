@@ -39,9 +39,15 @@ final class PartialCommandTest extends TestCase
 
     private mixed $previousBinDirectory;
 
+    /**
+     * @var list<string>
+     */
+    private array $fileListDirectoriesBefore = [];
+
     protected function setUp(): void
     {
         $this->project = new ProjectFixture();
+        $this->fileListDirectoriesBefore = $this->fileListDirectories();
         $this->fakeBinDirectory = (string)realpath(__DIR__ . '/Fixture/bin');
         // like vendor/bin/rector-p: rector-p calls rector from this directory
         $this->previousBinDirectory = $GLOBALS['_composer_bin_dir'] ?? null;
@@ -56,6 +62,18 @@ final class PartialCommandTest extends TestCase
         }
 
         $this->project->remove();
+        // a mutation in src/ can leave the empty directory that rector-p uses to list the files
+        foreach (array_diff($this->fileListDirectories(), $this->fileListDirectoriesBefore) as $directory) {
+            rmdir($directory);
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function fileListDirectories(): array
+    {
+        return glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [];
     }
 
     public function testRealRectorAppliesTheRulesOfRectorDistPhp(): void
@@ -421,6 +439,7 @@ final class PartialCommandTest extends TestCase
         yield 'typo' => [['src/Controler'], 'src/Controler'];
         yield 'glob pattern without match' => [['lib*'], 'lib*'];
         yield 'one of two' => [['src', 'tests'], 'tests'];
+        yield 'two' => [['lib', 'tests'], 'lib, tests'];
     }
 
     /**
@@ -473,14 +492,13 @@ final class PartialCommandTest extends TestCase
         self::assertSame(2, $this->runRealRector(['process', '--dry-run', '--no-progress-bar', '--config=custom.php']));
         $rectorCacheFiles = $this->filesIn($this->project->directory . '/var/rector-cache');
         self::assertNotSame([], $rectorCacheFiles);
-        $temporaryDirectories = glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [];
 
         $result = $this->runRectorP(['-c', 'custom.php']);
 
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertStringContainsString('Total files 3', $result['output']);
         self::assertSame($rectorCacheFiles, $this->filesIn($this->project->directory . '/var/rector-cache'));
-        self::assertSame($temporaryDirectories, glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [], 'rector-p must remove its own cache directory');
+        self::assertSame($this->fileListDirectoriesBefore, $this->fileListDirectories(), 'rector-p must remove its own cache directory');
     }
 
     public function testNextChunkCommandQuotesTheBinaryIfNeeded(): void
@@ -553,16 +571,11 @@ final class PartialCommandTest extends TestCase
      */
     private function runRealRector(array $arguments): int
     {
-        $process = proc_open(
-            [PHP_BINARY, (string)realpath(__DIR__ . '/../vendor/bin/rector'), ...$arguments],
-            // all descriptors are given: under Infection the test process has no usable stdin
-            [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
-            $pipes,
-            $this->project->directory,
-        );
-        self::assertIsResource($process);
+        $command = array_map(escapeshellarg(...), [PHP_BINARY, (string)realpath(__DIR__ . '/../vendor/bin/rector'), ...$arguments]);
+        // the shell redirects the output: under Infection, files opened by PHP are no file descriptors for proc_open()
+        exec('cd ' . escapeshellarg($this->project->directory) . ' && ' . implode(' ', $command) . ' > /dev/null 2>&1', result_code: $exitCode);
 
-        return proc_close($process);
+        return $exitCode;
     }
 
     /**
