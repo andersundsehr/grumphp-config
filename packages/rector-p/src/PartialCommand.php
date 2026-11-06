@@ -104,7 +104,8 @@ final class PartialCommand extends Command
         if ($chunkConfig->chunkNumber === $chunkConfig->totalChunks) {
             $this->output->writeln('All chunks done');
         } else {
-            $this->output->writeln('you can now start the next chunk:' . PHP_EOL . '<fg=gray>' . $this->nextChunkCommand($chunkConfig) . '</>');
+            $this->output->writeln('you can now start the next chunk:');
+            $this->output->writeln('<fg=gray>' . $this->nextChunkCommand($chunkConfig) . '</>');
         }
 
         return self::SUCCESS;

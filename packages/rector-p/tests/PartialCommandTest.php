@@ -10,8 +10,8 @@ use Andersundsehr\RectorP\Exception\StopException;
 use Andersundsehr\RectorP\PartialCommand;
 use Andersundsehr\RectorP\RectorPApplication;
 use InvalidArgumentException;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rector\Configuration\Option;
 use Rector\Configuration\Parameter\SimpleParameterProvider;
@@ -20,7 +20,10 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * runs the partial command in this process, with real rector runs on a small project
+ * runs the partial command in this process
+ *
+ * Most tests use the fake rector in tests/Fixture/bin, which takes milliseconds instead of a second per call.
+ * The tests named testRealRector… use the real rector to check that rector-p works with it.
  */
 #[CoversClass(PartialCommand::class)]
 #[CoversClass(StopException::class)]
@@ -28,17 +31,17 @@ final class PartialCommandTest extends TestCase
 {
     private ProjectFixture $project;
 
-    private string $binDirectory;
+    private string $fakeBinDirectory;
 
     private mixed $previousBinDirectory;
 
     protected function setUp(): void
     {
         $this->project = new ProjectFixture();
-        $this->binDirectory = (string)realpath(__DIR__ . '/../vendor/bin');
-        // like vendor/bin/rector-p, so rector is called from the vendor/bin directory of this package
+        $this->fakeBinDirectory = (string)realpath(__DIR__ . '/Fixture/bin');
+        // like vendor/bin/rector-p: rector-p calls rector from this directory
         $this->previousBinDirectory = $GLOBALS['_composer_bin_dir'] ?? null;
-        $GLOBALS['_composer_bin_dir'] = $this->binDirectory;
+        $GLOBALS['_composer_bin_dir'] = $this->fakeBinDirectory;
     }
 
     protected function tearDown(): void
@@ -51,25 +54,70 @@ final class PartialCommandTest extends TestCase
         $this->project->remove();
     }
 
+    public function testRealRectorAppliesTheRulesOfRectorDistPhp(): void
+    {
+        $this->useRealRector();
+
+        $result = $this->runRectorP([]);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertTrue($this->project->isTernaryConverted('A Space'));
+        self::assertTrue($this->project->isTernaryConverted('B'));
+        self::assertFalse($this->project->isListConverted('A Space'), 'the rules of custom.php must not run');
+    }
+
+    public function testRealRectorAppliesTheRulesOfTheConfigOption(): void
+    {
+        $this->useRealRector();
+
+        $result = $this->runRectorP(['-c', 'custom.php']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        foreach (['A Space', 'B'] as $name) {
+            self::assertTrue($this->project->isListConverted($name));
+            self::assertFalse($this->project->isTernaryConverted($name), 'the rules of rector.dist.php must not run');
+        }
+    }
+
+    public function testRealRectorFailureStopsWithItsExitCode(): void
+    {
+        $this->useRealRector();
+        $this->project->writeFile('0Broken', "<?php\nfunction broken( {\n");
+
+        $result = $this->runRectorP([]);
+
+        self::assertSame(1, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Rector failed for ' . $this->project->filePath('0Broken') . ' with exit code 1', $result['output']);
+        self::assertFalse($this->project->isTernaryConverted('A Space'), 'rector-p must stop at the broken file');
+    }
+
     public function testFindsRectorDistPhpAndPassesItToEveryRectorRun(): void
     {
         $result = $this->runRectorP([], verbosity: OutputInterface::VERBOSITY_VERY_VERBOSE);
 
         self::assertSame(0, $result['exitCode'], $result['output']);
-        $rector = escapeshellarg($this->binDirectory . '/rector') . ' process --ansi --no-progress-bar';
+        $rector = escapeshellarg($this->fakeBinDirectory . '/rector') . ' process --ansi --no-progress-bar';
         $config = "--config='" . $this->project->directory . "/rector.dist.php'";
         self::assertStringContainsString($rector . ' --dry-run ' . $config . " '" . $this->project->filePath('A Space') . "'", $result['output']);
         self::assertStringContainsString($rector . ' --no-diffs ' . $config . " '" . $this->project->filePath('A Space') . "'", $result['output']);
-        self::assertStringContainsString($rector . ' --no-diffs ' . $config . " '" . $this->project->filePath('B') . "'", $result['output']);
+        $configArgument = '--config=' . $this->project->directory . '/rector.dist.php';
+        self::assertSame(
+            [
+                ['process', '--ansi', '--no-progress-bar', '--dry-run', $configArgument, $this->project->filePath('A Space')],
+                ['process', '--ansi', '--no-progress-bar', '--no-diffs', $configArgument, $this->project->filePath('A Space')],
+                ['process', '--ansi', '--no-progress-bar', '--dry-run', $configArgument, $this->project->filePath('B')],
+                ['process', '--ansi', '--no-progress-bar', '--no-diffs', $configArgument, $this->project->filePath('B')],
+            ],
+            $this->project->rectorCalls(),
+        );
         self::assertStringContainsString('Total files 2', $result['output']);
-        self::assertStringContainsString('done with 1/2 files', $result['output']);
-        self::assertStringContainsString('done with 2/2 files', $result['output']);
+        self::assertMatchesRegularExpression('#done with 1/2 files ~[\dhms ]+ to finish#', $result['output']);
+        self::assertMatchesRegularExpression('#done with 2/2 files ~[\dhms ]+ to finish#', $result['output']);
         self::assertStringContainsString('Done with chunk 1 of 1', $result['output']);
         self::assertStringContainsString('All chunks done', $result['output']);
         self::assertStringNotContainsString('duration: ', $result['output']);
-        self::assertTrue($this->project->isTernaryConverted('A Space'));
-        self::assertTrue($this->project->isTernaryConverted('B'));
-        self::assertFalse($this->project->isListConverted('A Space'), 'the rules of custom.php must not run');
+        self::assertTrue($this->project->isListConverted('A Space'));
+        self::assertTrue($this->project->isListConverted('B'));
     }
 
     public function testDebugVerbosityPrintsTheDurationOfEveryRectorRun(): void
@@ -89,28 +137,41 @@ final class PartialCommandTest extends TestCase
         self::assertStringNotContainsString('process --ansi', $result['output']);
     }
 
-    public function testConfigOptionIsUsedForEveryRectorRun(): void
+    public function testConfigOptionIsPassedToEveryRectorRun(): void
     {
-        $result = $this->runRectorP(['-c', 'custom.php'], verbosity: OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $result = $this->runRectorP(['-c', 'custom.php']);
 
         self::assertSame(0, $result['exitCode'], $result['output']);
-        self::assertStringContainsString("--config='" . $this->project->directory . "/custom.php'", $result['output']);
-        foreach (['A Space', 'B'] as $name) {
-            self::assertTrue($this->project->isListConverted($name));
-            self::assertFalse($this->project->isTernaryConverted($name), 'the rules of rector.dist.php must not run');
+        $calls = $this->project->rectorCalls();
+        self::assertCount(4, $calls);
+        foreach ($calls as $call) {
+            self::assertContains('--config=' . $this->project->directory . '/custom.php', $call);
         }
     }
 
-    public function testStopsWithTheExitCodeOfRectorWhenRectorFails(): void
+    public function testStopsWithTheExitCodeOfRectorWhenTheCheckFails(): void
     {
-        file_put_contents($this->project->filePath('0Broken'), "<?php\nfunction broken( {\n");
+        $this->project->writeFile('0Broken', "<?php\nfunction broken( {\n");
 
         $result = $this->runRectorP([]);
 
         self::assertSame(1, $result['exitCode'], $result['output']);
         self::assertStringContainsString('Rector failed for ' . $this->project->filePath('0Broken') . ' with exit code 1', $result['output']);
         self::assertStringNotContainsString('Done with chunk', $result['output']);
-        self::assertFalse($this->project->isTernaryConverted('A Space'), 'rector-p must stop at the broken file');
+        self::assertCount(1, $this->project->rectorCalls(), 'rector-p must stop at the broken file');
+    }
+
+    public function testStopsWithTheExitCodeOfRectorWhenApplyingTheChangesFails(): void
+    {
+        $this->project->writeFile('A Space', "<?php\n// fail on apply\nlist(\$a, \$b) = [1, 2];\n");
+
+        $result = $this->runRectorP([]);
+
+        self::assertSame(1, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Rector failed for ' . $this->project->filePath('A Space') . ' with exit code 1', $result['output']);
+        self::assertStringNotContainsString('Done with chunk', $result['output']);
+        $this->project->writeSource('A Space');
+        self::assertSame(2, $this->checkedFiles($this->runRectorP([])), 'the failed file is not done');
     }
 
     public function testSkipFileLeavesTheFileForTheNextRun(): void
@@ -119,8 +180,8 @@ final class PartialCommandTest extends TestCase
 
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertStringContainsString('Found changes in file ' . $this->project->filePath('A Space') . ' (default: execute)?', $result['output']);
-        self::assertFalse($this->project->isTernaryConverted('A Space'));
-        self::assertFalse($this->project->isTernaryConverted('B'));
+        self::assertFalse($this->project->isListConverted('A Space'));
+        self::assertFalse($this->project->isListConverted('B'));
         self::assertSame(2, $this->checkedFiles($this->runRectorP([])), 'skipped files are not done');
     }
 
@@ -131,8 +192,8 @@ final class PartialCommandTest extends TestCase
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertSame(2, substr_count($result['output'], 'Checking file ' . $this->project->filePath('A Space')));
         self::assertSame(1, substr_count($result['output'], 'Checking file ' . $this->project->filePath('B')));
-        self::assertTrue($this->project->isTernaryConverted('A Space'));
-        self::assertTrue($this->project->isTernaryConverted('B'));
+        self::assertTrue($this->project->isListConverted('A Space'));
+        self::assertTrue($this->project->isListConverted('B'));
     }
 
     public function testQuitStopsWithoutChangingTheFile(): void
@@ -140,7 +201,7 @@ final class PartialCommandTest extends TestCase
         $result = $this->runRectorP([], ['quit']);
 
         self::assertSame(0, $result['exitCode'], $result['output']);
-        self::assertFalse($this->project->isTernaryConverted('A Space'));
+        self::assertFalse($this->project->isListConverted('A Space'));
         self::assertStringNotContainsString('Checking file ' . $this->project->filePath('B'), $result['output']);
         self::assertStringNotContainsString('Done with chunk', $result['output']);
     }
@@ -150,8 +211,8 @@ final class PartialCommandTest extends TestCase
         $result = $this->runRectorP([], ['', '']);
 
         self::assertSame(0, $result['exitCode'], $result['output']);
-        self::assertTrue($this->project->isTernaryConverted('A Space'));
-        self::assertTrue($this->project->isTernaryConverted('B'));
+        self::assertTrue($this->project->isListConverted('A Space'));
+        self::assertTrue($this->project->isListConverted('B'));
     }
 
     public function testFilesWithoutChangesAreDoneWithoutQuestion(): void
@@ -227,20 +288,37 @@ final class PartialCommandTest extends TestCase
         self::assertTrue($this->project->isListConverted('C'));
     }
 
-    public function testChunksCoverAllFilesAfterRectorCachedTheFirstChunk(): void
+    public function testFilesAreSortedBeforeTheyAreSplitIntoChunks(): void
     {
-        // the effect of rector's result cache only shows with separate processes, see RectorPBinaryTest
-        $this->project->writeSource('A Space', true);
-        $this->project->writeSource('B', true);
-        $this->project->writeSource('C');
-        $this->project->writeSource('D');
+        // rector keeps files given on the command line in the given order
+        $result = $this->runRectorP(['--chunk', '1/2', 'src/B.php', 'src/A Space.php']);
 
-        $this->runRectorP(['-c', 'custom.php', '--chunk', '1/2']);
-        $secondChunk = $this->runRectorP(['-c', 'custom.php', '--chunk', '2/2']);
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Checking file ' . $this->project->filePath('A Space'), $result['output']);
+        self::assertStringNotContainsString('Checking file ' . $this->project->filePath('B'), $result['output']);
+    }
 
-        self::assertStringContainsString('Files 2 of 4', $secondChunk['output']);
-        self::assertTrue($this->project->isListConverted('C'), 'C was skipped');
-        self::assertTrue($this->project->isListConverted('D'));
+    /**
+     * @return iterable<string, array{int, string, string}>
+     */
+    public static function chunkSizes(): iterable
+    {
+        yield '3 files, the last chunk is smaller' => [3, '2/2', 'Files 1 of 3'];
+        yield '5 files, the last chunk is smaller' => [5, '2/2', 'Files 2 of 5'];
+        yield '7 files, chunk size is rounded up' => [7, '3/3', 'Files 1 of 7'];
+    }
+
+    #[DataProvider('chunkSizes')]
+    public function testChunkSizes(int $fileCount, string $chunk, string $expected): void
+    {
+        foreach (array_slice(['C', 'D', 'E', 'F', 'G'], 0, $fileCount - 2) as $name) {
+            $this->project->writeSource($name, true);
+        }
+
+        $result = $this->runRectorP(['--chunk', $chunk]);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString($expected, $result['output']);
     }
 
     /**
@@ -263,6 +341,28 @@ final class PartialCommandTest extends TestCase
         self::assertStringContainsString(PHP_EOL . 'vendor/bin/rector-p' . $option . ' --chunk 2/2' . PHP_EOL, $result['output']);
     }
 
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function quietVerbosities(): iterable
+    {
+        yield 'quiet' => [OutputInterface::VERBOSITY_QUIET];
+        // can remove defined check if Symfony 7.2 is lowest supported version:
+        if (defined(OutputInterface::class . '::VERBOSITY_SILENT')) {
+            yield 'silent' => [OutputInterface::VERBOSITY_SILENT];
+        }
+    }
+
+    #[DataProvider('quietVerbosities')]
+    public function testQuietChunkRunPrintsNoNextChunkCommand(int $verbosity): void
+    {
+        $result = $this->runRectorP(['--chunk', '1/2'], verbosity: $verbosity);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringNotContainsString('--chunk 2/2', $result['output']);
+        self::assertTrue($this->project->isListConverted('A Space'));
+    }
+
     public function testChunkOneMeansAllFiles(): void
     {
         $result = $this->runRectorP(['--chunk', '1']);
@@ -272,12 +372,23 @@ final class PartialCommandTest extends TestCase
         self::assertStringContainsString('All chunks done', $result['output']);
     }
 
-    public function testInvalidChunkThrows(): void
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidChunks(): iterable
+    {
+        yield 'dash' => ['1-2'];
+        yield 'text after' => ['1/2x'];
+        yield 'text before' => ['x1/2'];
+    }
+
+    #[DataProvider('invalidChunks')]
+    public function testInvalidChunkThrows(string $chunk): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid chunk config given 1-2');
+        $this->expectExceptionMessage('Invalid chunk config given ' . $chunk);
 
-        $this->runRectorP(['--chunk', '1-2']);
+        $this->runRectorP(['--chunk', $chunk]);
     }
 
     public function testMoreChunksThanFilesThrows(): void
@@ -313,7 +424,7 @@ final class PartialCommandTest extends TestCase
     {
         unset($GLOBALS['_composer_bin_dir']);
         mkdir($this->project->directory . '/vendor/bin', 0777, true);
-        symlink($this->binDirectory . '/rector', $this->project->directory . '/vendor/bin/rector');
+        symlink($this->fakeBinDirectory . '/rector', $this->project->directory . '/vendor/bin/rector');
 
         $result = $this->runRectorP(['-c', 'custom.php'], verbosity: OutputInterface::VERBOSITY_VERY_VERBOSE);
 
@@ -326,7 +437,7 @@ final class PartialCommandTest extends TestCase
     {
         unset($GLOBALS['_composer_bin_dir']);
         $path = (string)getenv('PATH');
-        putenv('PATH=' . $this->binDirectory . PATH_SEPARATOR . $path);
+        putenv('PATH=' . $this->fakeBinDirectory . PATH_SEPARATOR . $path);
 
         try {
             $result = $this->runRectorP(['-c', 'custom.php'], verbosity: OutputInterface::VERBOSITY_VERY_VERBOSE);
@@ -337,6 +448,11 @@ final class PartialCommandTest extends TestCase
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertStringContainsString("'rector' process", $result['output']);
         self::assertTrue($this->project->isListConverted('A Space'));
+    }
+
+    private function useRealRector(): void
+    {
+        $GLOBALS['_composer_bin_dir'] = (string)realpath(__DIR__ . '/../vendor/bin');
     }
 
     /**

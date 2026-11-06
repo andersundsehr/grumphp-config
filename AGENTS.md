@@ -16,9 +16,10 @@ When you change code or tests in `packages/rector-p`:
    - with `--only-covering-test-cases`,
    - with the default settings, never with `--with-uncovered`.
 3. The score must stay at or above `minMsi` in `packages/rector-p/infection.json5`. If it went up, raise `minMsi` to the new value, rounded down. Never lower it.
-4. Read the escaped mutants in `var/infection/infection.log`. Write or sharpen tests for real gaps. Equivalent or purely cosmetic mutants do not need to be killed.
+4. Read the escaped mutants in `var/infection/infection.log`. Write or sharpen tests for real gaps. Equivalent or purely cosmetic mutants do not need to be killed; if they are cosmetic output, add a narrow ignore with a comment to `infection.json5` (see below).
 5. Do not call `exit()` in `src/`; throw `StopException`. The tests run `PartialCommand` in the test process.
 6. Every test class needs `#[CoversClass]` for the class it tests (`#[CoversNothing]` for tests that only start the binary). This keeps Infection fast.
+7. New tests of `PartialCommand` use the fake Rector in `tests/Fixture/bin/rector` (the default in `PartialCommandTest`). Call `useRealRector()` only when the test is about working with the real Rector.
 
 ### Keeping Infection fast and its score honest
 
@@ -29,3 +30,5 @@ Lessons from setting up mutation testing for rector-p:
 - **Check `var/infection/summary.log` for `Skipped`.** Infection skips a mutation if even the fastest covering test takes longer than `timeout` in `infection.json5`, and skipped mutations do not count in the score. A high score with many skipped mutations means nothing.
 - **Coverage is limited to `src/`** by the `<source>` element in `phpunit.xml.dist`. Without it PCOV also measures Rector and PHPStan, and every test becomes much slower.
 - **Infection writes its logs only at the end.** If you stop a run early, you get no list of escaped mutations. Run it in the background and wait.
+- **A fake Rector makes the command tests fast.** A real Rector run takes about a second, and `PartialCommandTest` needs several per test. `tests/Fixture/bin/rector` answers in milliseconds: a file with `list($a, $b)` has changes, `function broken(` fails, `fail on apply` fails when the changes are applied. It logs every call to `rector-calls.log` in the project, `ProjectFixture::rectorCalls()` reads it. Only the three `testRealRector…` tests and `RectorPBinaryTest` start the real Rector.
+- **Ignored mutations are not run at all.** `infection.json5` ignores cosmetic mutations (style tags, the time estimate, the duration printed with `-vvv`) and a few that can not change the behaviour, each with a comment. A regex in `ignoreSourceCodeByRegex` matches a whole line of the original code, so it hides every mutation of that mutator on the line, also useful ones. Keep entries narrow (one mutator, one line or one method) and prefer a test where one is possible, like the regex for the time estimate in `testFindsRectorDistPhpAndPassesItToEveryRectorRun`. Never ignore whole classes or mutators to raise the score.

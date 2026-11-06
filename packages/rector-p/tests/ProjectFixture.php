@@ -75,6 +75,33 @@ final readonly class ProjectFixture
         file_put_contents($this->filePath($name), $source);
     }
 
+    public function writeFile(string $name, string $source): void
+    {
+        file_put_contents($this->filePath($name), $source);
+    }
+
+    /**
+     * the arguments of every call of the fake rector (tests/Fixture/bin/rector)
+     *
+     * @return list<list<string>>
+     */
+    public function rectorCalls(): array
+    {
+        $logFile = $this->directory . '/rector-calls.log';
+        if (!file_exists($logFile)) {
+            return [];
+        }
+
+        $calls = [];
+        foreach (file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $arguments = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
+            assert(is_array($arguments));
+            $calls[] = array_values(array_map(strval(...), $arguments));
+        }
+
+        return $calls;
+    }
+
     public function filePath(string $name): string
     {
         return $this->directory . '/src/' . $name . '.php';
