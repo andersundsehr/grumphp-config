@@ -30,6 +30,14 @@ final class Cache
         }
     }
 
+    /**
+     * a path for a temporary directory next to the progress, the caller creates and removes the directory
+     */
+    public function temporaryDirectory(): string
+    {
+        return $this->directory . '/tmp-' . bin2hex(random_bytes(8));
+    }
+
     public function setProcessed(string $fileName): void
     {
         $data = $this->getData();

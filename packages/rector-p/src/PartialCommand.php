@@ -216,7 +216,7 @@ final class PartialCommand extends Command
         // rector leaves out files that its result cache marks as unchanged, so the list would depend on earlier runs
         // and the chunks would shift. rector-p lists the files with an empty cache of its own: its progress decides
         // which files are left, and the result cache of the project stays as it is.
-        $cacheDirectory = sys_get_temp_dir() . '/rector-p-file-list-' . bin2hex(random_bytes(8));
+        $cacheDirectory = $this->cache->temporaryDirectory();
         SimpleParameterProvider::setParameter(Option::CACHE_DIR, $cacheDirectory);
         try {
             return $rectorContainer->get(FilesFinder::class)->findFilesInPaths($paths, $configuration);

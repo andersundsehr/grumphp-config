@@ -39,15 +39,9 @@ final class PartialCommandTest extends TestCase
 
     private mixed $previousBinDirectory;
 
-    /**
-     * @var list<string>
-     */
-    private array $fileListDirectoriesBefore = [];
-
     protected function setUp(): void
     {
         $this->project = new ProjectFixture();
-        $this->fileListDirectoriesBefore = $this->fileListDirectories();
         $this->fakeBinDirectory = (string)realpath(__DIR__ . '/Fixture/bin');
         // like vendor/bin/rector-p: rector-p calls rector from this directory
         $this->previousBinDirectory = $GLOBALS['_composer_bin_dir'] ?? null;
@@ -62,18 +56,6 @@ final class PartialCommandTest extends TestCase
         }
 
         $this->project->remove();
-        // a mutation in src/ can leave the empty directory that rector-p uses to list the files
-        foreach (array_diff($this->fileListDirectories(), $this->fileListDirectoriesBefore) as $directory) {
-            rmdir($directory);
-        }
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function fileListDirectories(): array
-    {
-        return glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [];
     }
 
     public function testRealRectorAppliesTheRulesOfRectorDistPhp(): void
@@ -498,7 +480,7 @@ final class PartialCommandTest extends TestCase
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertStringContainsString('Total files 3', $result['output']);
         self::assertSame($rectorCacheFiles, $this->filesIn($this->project->directory . '/var/rector-cache'));
-        self::assertSame($this->fileListDirectoriesBefore, $this->fileListDirectories(), 'rector-p must remove its own cache directory');
+        self::assertSame([], glob($this->project->progressDirectory . '/tmp-*'), 'rector-p must remove its temporary directory');
     }
 
     public function testNextChunkCommandQuotesTheBinaryIfNeeded(): void

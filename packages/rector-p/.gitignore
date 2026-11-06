@@ -1,5 +1,6 @@
 vendor/
 cache.json
 cache-*.json
+tmp-*/
 var/
 composer.lock

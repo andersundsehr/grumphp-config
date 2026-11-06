@@ -90,6 +90,14 @@ final class CacheTest extends TestCase
         self::assertFileExists($this->directory . '/cache.json');
     }
 
+    public function testTemporaryDirectoryIsNextToTheProgress(): void
+    {
+        $cache = new Cache($this->directory);
+
+        self::assertStringStartsWith($this->directory . '/tmp-', $cache->temporaryDirectory());
+        self::assertNotSame($cache->temporaryDirectory(), $cache->temporaryDirectory());
+    }
+
     public function testProgressFileIsReadable(): void
     {
         $cache = new Cache($this->directory);
