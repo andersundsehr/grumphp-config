@@ -422,6 +422,7 @@ final class PartialCommandTest extends TestCase
         yield 'glob pattern without match' => [['lib*'], 'lib*'];
         yield 'one of two' => [['src', 'tests'], 'tests'];
         yield 'two' => [['lib', 'tests'], 'lib, tests'];
+        yield 'like rector, only * makes a glob pattern' => [['src/?.php'], 'src/?.php'];
     }
 
     /**
@@ -491,6 +492,37 @@ final class PartialCommandTest extends TestCase
         self::assertStringContainsString(PHP_EOL . "'/my project/vendor/bin/rector-p' --chunk 2/2" . PHP_EOL, $result['output']);
     }
 
+    public function testRectorChecksThePathsOfTheConfig(): void
+    {
+        $this->writePathsConfig(['src', 'lib']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The path "' . $this->project->directory . '/lib" does not exist.');
+
+        $this->runRectorP(['-c', 'paths.php']);
+    }
+
+    public function testStartOverKeepsTheProgressIfThePathsAreWrong(): void
+    {
+        $this->runRectorP(['-c', 'custom.php']);
+
+        $result = $this->runRectorP(['-c', 'custom.php', '--startOver', 'src/Controler']);
+
+        self::assertSame(1, $result['exitCode'], $result['output']);
+        self::assertStringNotContainsString('Starting over', $result['output']);
+        self::assertSame(0, $this->checkedFiles($this->runRectorP(['-c', 'custom.php'])), 'the progress must be kept');
+    }
+
+    public function testFailsWithoutRectorConfig(): void
+    {
+        unlink($this->project->directory . '/rector.dist.php');
+
+        $result = $this->runRectorP([]);
+
+        self::assertSame(1, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('No Rector config found: pass it with --config or add rector.php or rector.dist.php to the current directory', $result['output']);
+    }
+
     public function testEmptyFileListIsNoError(): void
     {
         mkdir($this->project->directory . '/empty');
@@ -540,6 +572,15 @@ final class PartialCommandTest extends TestCase
         self::assertSame(0, $result['exitCode'], $result['output']);
         self::assertStringContainsString("'rector' process", $result['output']);
         self::assertTrue($this->project->isListConverted('A Space'));
+    }
+
+    /**
+     * @param list<string> $paths relative to the project
+     */
+    private function writePathsConfig(array $paths): void
+    {
+        $paths = implode(', ', array_map(static fn(string $path): string => "__DIR__ . '/" . $path . "'", $paths));
+        file_put_contents($this->project->directory . '/paths.php', '<?php return ' . RectorConfig::class . '::configure()->withPaths([' . $paths . ']);');
     }
 
     private function useRealRector(): void

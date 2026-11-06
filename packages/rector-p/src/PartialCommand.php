@@ -16,6 +16,7 @@ use Rector\Configuration\Parameter\SimpleParameterProvider;
 use Rector\Console\ExitCode;
 use Rector\DependencyInjection\RectorContainerFactory;
 use Rector\FileSystem\FilesFinder;
+use Rector\FileSystem\FilesystemTweaker;
 use Rector\ValueObject\Bootstrap\BootstrapConfigs;
 use Rector\ValueObject\Configuration;
 use Symfony\Component\Console\Command\Command;
@@ -37,7 +38,7 @@ final class PartialCommand extends Command
     /**
      * the rector config that was used to find the files (--config, rector.php or rector.dist.php)
      */
-    private ?string $configFile = null;
+    private string $configFile;
 
     public function __construct(private readonly Cache $cache)
     {
@@ -64,24 +65,35 @@ final class PartialCommand extends Command
         $this->output = $output;
 
         $bootstrapConfigs = (new RectorConfigsResolver())->provide();
-        $this->configFile = $bootstrapConfigs->getMainConfigFile();
+        $configFile = $bootstrapConfigs->getMainConfigFile();
+        if ($configFile === null) {
+            $this->output->writeln('<error>No Rector config found: pass it with --config or add rector.php or rector.dist.php to the current directory</error>');
+            return self::FAILURE;
+        }
+
+        $this->configFile = $configFile;
         $this->cache->useConfigFile($this->configFile);
+
+        $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
+
+        $sources = $this->input->getArgument(Option::SOURCE);
+        $paths = $sources ?: $this->configuredPaths();
+        // without the main config file, the container does not check the result cache of the project
+        $rectorContainer = (new RectorContainerFactory())->createFromBootstrapConfigs(new BootstrapConfigs(null, $bootstrapConfigs->getConfigFiles()));
+
+        // rector itself checks the paths of the config
+        $missingPaths = $this->missingPaths($sources, $rectorContainer->get(FilesystemTweaker::class));
+        if ($missingPaths !== []) {
+            $this->output->writeln('<error>These paths match no file or directory: ' . implode(', ', $missingPaths) . '</error>');
+            return self::FAILURE;
+        }
 
         if ($input->getOption('startOver')) {
             $this->output->writeln('Starting over (cleared the processed cache)');
             $this->cache->clear();
         }
 
-        $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
-
-        $sources = $this->input->getArgument(Option::SOURCE);
-        $missingSources = $this->missingSources($sources);
-        if ($missingSources !== []) {
-            $this->output->writeln('<error>These paths match no file or directory: ' . implode(', ', $missingSources) . '</error>');
-            return self::FAILURE;
-        }
-
-        $allFiles = $this->getAllFiles($sources, $bootstrapConfigs);
+        $allFiles = $this->findFiles($paths, $rectorContainer);
         if ($allFiles === []) {
             $this->output->writeln('No files found');
             return self::SUCCESS;
@@ -140,7 +152,7 @@ final class PartialCommand extends Command
         }
 
         $configIsGiven = $this->input->getOption(Option::CONFIG) !== $this->getDefinition()->getOption(Option::CONFIG)->getDefault();
-        if ($configIsGiven && $this->configFile !== null) {
+        if ($configIsGiven) {
             $parts[] = '--config=' . escapeshellarg($this->configFile);
         }
 
@@ -172,62 +184,66 @@ final class PartialCommand extends Command
     }
 
     /**
-     * like rector, rector-p accepts glob patterns, e.g. src/*Bundle
-     *
-     * @param list<string> $sources
-     * @return list<string>
+     * @return array<string>
      */
-    private function missingSources(array $sources): array
+    private function configuredPaths(): array
     {
-        $missingSources = [];
-        foreach ($sources as $source) {
-            if (!file_exists($source) && (glob($source) ?: []) === []) {
-                $missingSources[] = $source;
-            }
-        }
-
-        return $missingSources;
-    }
-
-    /**
-     * @param list<string> $sources
-     * @return list<string>
-     */
-    private function getAllFiles(array $sources, BootstrapConfigs $bootstrapConfigs): array
-    {
-        $configFunction = require $bootstrapConfigs->getMainConfigFile();
+        $configFunction = require $this->configFile;
         if (is_callable($configFunction)) {
             $configFunction(new RectorConfig());
         }
 
-        if ($sources) {
-            $paths = $sources;
-        } else {
-            $paths = SimpleParameterProvider::provideArrayParameter(Option::PATHS);
-            if (!$paths) {
-                throw new InvalidArgumentException('No paths found in configuration ' . $bootstrapConfigs->getMainConfigFile());
+        $paths = SimpleParameterProvider::provideArrayParameter(Option::PATHS);
+        if (!$paths) {
+            throw new InvalidArgumentException('No paths found in configuration ' . $this->configFile);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * resolves the paths like rector: glob patterns with *, all other paths as they are
+     *
+     * @param list<string> $paths
+     * @return list<string> the paths that match no file or directory
+     */
+    private function missingPaths(array $paths, FilesystemTweaker $filesystemTweaker): array
+    {
+        $missingPaths = [];
+        foreach ($paths as $path) {
+            if ($filesystemTweaker->resolveWithFnmatch([$path]) === []) {
+                $missingPaths[] = $path;
             }
         }
 
-        // without the main config file, the container does not check the result cache of the project
-        $rectorContainer = (new RectorContainerFactory())->createFromBootstrapConfigs(new BootstrapConfigs(null, $bootstrapConfigs->getConfigFiles()));
+        return $missingPaths;
+    }
+
+    /**
+     * @param array<string> $paths
+     * @return array<string>
+     */
+    private function findFiles(array $paths, RectorConfig $rectorContainer): array
+    {
         $configuration = new Configuration(fileExtensions: SimpleParameterProvider::provideArrayParameter(Option::FILE_EXTENSIONS));
 
         // rector leaves out files that its result cache marks as unchanged, so the list would depend on earlier runs
         // and the chunks would shift. rector-p lists the files with an empty cache of its own: its progress decides
         // which files are left, and the result cache of the project stays as it is.
         $cacheDirectory = $this->cache->temporaryDirectory();
+        // rector-p creates the directory itself: with an in-memory cache, e.g. rector 2.2 in CI, rector does not create it
+        mkdir($cacheDirectory);
         SimpleParameterProvider::setParameter(Option::CACHE_DIR, $cacheDirectory);
         try {
             return $rectorContainer->get(FilesFinder::class)->findFilesInPaths($paths, $configuration);
         } finally {
-            // rector creates the directory, listing the files leaves it empty
+            // listing the files leaves the directory empty
             rmdir($cacheDirectory);
         }
     }
 
     /**
-     * @param list<string> $allFiles
+     * @param array<string> $allFiles
      * @return list<string>
      */
     private function chunkFiles(array $allFiles, ChunkConfig $chunkConfig): array
@@ -359,12 +375,8 @@ final class PartialCommand extends Command
      */
     private function rectorCommand(string $mode, string $file): string
     {
-        $command = escapeshellarg($this->getBinPath() . 'rector') . ' process --ansi --no-progress-bar ' . $mode;
-        if ($this->configFile !== null) {
-            $command .= ' --config=' . escapeshellarg($this->configFile);
-        }
-
-        return $command . ' ' . escapeshellarg($file);
+        return escapeshellarg($this->getBinPath() . 'rector') . ' process --ansi --no-progress-bar ' . $mode
+            . ' --config=' . escapeshellarg($this->configFile) . ' ' . escapeshellarg($file);
     }
 
     private function runCommand(string $command): int

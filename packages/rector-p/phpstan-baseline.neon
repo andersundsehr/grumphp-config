@@ -1,7 +1,2 @@
 parameters:
-	ignoreErrors:
-		-
-			message: '#^Method Andersundsehr\\RectorP\\PartialCommand\:\:getAllFiles\(\) should return list\<string\> but returns array\<string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/PartialCommand.php
+	ignoreErrors: []

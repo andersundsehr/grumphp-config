@@ -39,7 +39,7 @@ vendor/bin/rector-p src/Controller/MyController.php src/Controller/MyOtherContro
 
 ### What happens
 
-1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. It collects the files from the configured `paths`, or from the paths you pass as arguments, with the file extensions of the configuration (`withFileExtensions()`). Paths may be glob patterns like Rector's, a path that matches nothing stops `rector-p` with an error. The files are sorted by name. If there are no files, it stops with `No files found`.
+1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. Without a configuration it stops with an error. It collects the files from the configured `paths`, or from the paths you pass as arguments, with the file extensions of the configuration (`withFileExtensions()`). Like in Rector, a path with `*` is a glob pattern; a path you pass that matches nothing stops `rector-p` with an error. The files are sorted by name. If there are no files, it stops with `No files found`.
 
    For this list `rector-p` uses an empty cache of its own instead of Rector's result cache. Otherwise Rector would leave out files it already checked, and the list and the chunks would change from run to run. Rector's result cache stays as it is. Which files are left to do is decided by the progress of `rector-p` (see below).
 2. For each file it runs `rector process --dry-run <file>` with that configuration, which shows the diff.
