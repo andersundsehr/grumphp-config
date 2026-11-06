@@ -72,13 +72,21 @@ final class PartialCommand extends Command
             $this->cache->clear();
         }
 
-        $allFiles = $this->getAllFiles($this->input->getArgument(Option::SOURCE), $bootstrapConfigs);
+        $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
+
+        $sources = $this->input->getArgument(Option::SOURCE);
+        $missingSources = $this->missingSources($sources);
+        if ($missingSources !== []) {
+            $this->output->writeln('<error>These paths match no file or directory: ' . implode(', ', $missingSources) . '</error>');
+            return self::FAILURE;
+        }
+
+        $allFiles = $this->getAllFiles($sources, $bootstrapConfigs);
         if ($allFiles === []) {
             $this->output->writeln('No files found');
             return self::SUCCESS;
         }
 
-        $chunkConfig = $this->parseChunkConfig($input->getOption('chunk'));
         if ($chunkConfig->chunkNumber === 1) {
             $this->output->writeln('Total files ' . count($allFiles));
         } else {
@@ -97,7 +105,7 @@ final class PartialCommand extends Command
                 $this->output->writeln('<error>' . $stopException->getMessage() . '</error>');
             }
 
-            return $stopException->exitCode;
+            return $stopException->getCode();
         }
 
         $this->output->writeln('Done with chunk ' . $chunkConfig->chunkNumber . ' of ' . $chunkConfig->totalChunks);
@@ -116,7 +124,7 @@ final class PartialCommand extends Command
      */
     private function nextChunkCommand(ChunkConfig $chunkConfig): string
     {
-        $parts = [$_SERVER['argv'][0]];
+        $parts = [$this->shellArgument($_SERVER['argv'][0])];
 
         $verbosity = match ($this->output->getVerbosity()) {
             // can remove defined check if Symfony 7.2 is lowest supported version:
@@ -152,6 +160,36 @@ final class PartialCommand extends Command
     }
 
     /**
+     * keeps simple arguments readable, e.g. vendor/bin/rector-p
+     */
+    private function shellArgument(string $argument): string
+    {
+        if (preg_match('#^[\w./-]+$#', $argument)) {
+            return $argument;
+        }
+
+        return escapeshellarg($argument);
+    }
+
+    /**
+     * like rector, rector-p accepts glob patterns, e.g. src/*Bundle
+     *
+     * @param list<string> $sources
+     * @return list<string>
+     */
+    private function missingSources(array $sources): array
+    {
+        $missingSources = [];
+        foreach ($sources as $source) {
+            if (!file_exists($source) && (glob($source) ?: []) === []) {
+                $missingSources[] = $source;
+            }
+        }
+
+        return $missingSources;
+    }
+
+    /**
      * @param list<string> $sources
      * @return list<string>
      */
@@ -171,12 +209,21 @@ final class PartialCommand extends Command
             }
         }
 
-        $rectorContainer = (new RectorContainerFactory())->createFromBootstrapConfigs($bootstrapConfigs);
-        $filesFinder = $rectorContainer->get(FilesFinder::class);
+        // without the main config file, the container does not check the result cache of the project
+        $rectorContainer = (new RectorContainerFactory())->createFromBootstrapConfigs(new BootstrapConfigs(null, $bootstrapConfigs->getConfigFiles()));
+        $configuration = new Configuration(fileExtensions: SimpleParameterProvider::provideArrayParameter(Option::FILE_EXTENSIONS));
 
         // rector leaves out files that its result cache marks as unchanged, so the list would depend on earlier runs
-        // and the chunks would shift. rector-p needs all files: its own progress decides which files are left.
-        return $filesFinder->findFilesInPaths($paths, new Configuration(shouldClearCache: true));
+        // and the chunks would shift. rector-p lists the files with an empty cache of its own: its progress decides
+        // which files are left, and the result cache of the project stays as it is.
+        $cacheDirectory = sys_get_temp_dir() . '/rector-p-file-list-' . bin2hex(random_bytes(8));
+        SimpleParameterProvider::setParameter(Option::CACHE_DIR, $cacheDirectory);
+        try {
+            return $rectorContainer->get(FilesFinder::class)->findFilesInPaths($paths, $configuration);
+        } finally {
+            // rector creates the directory, listing the files leaves it empty
+            rmdir($cacheDirectory);
+        }
     }
 
     /**
@@ -258,7 +305,7 @@ final class PartialCommand extends Command
             Task::execute => $this->executeRector($file),
             Task::retry => $this->workOnFile($file),
             Task::skipFile => null,
-            Task::quit => throw new StopException(self::SUCCESS),
+            Task::quit => throw new StopException('', self::SUCCESS),
         };
     }
 
@@ -291,7 +338,7 @@ final class PartialCommand extends Command
 
         if ($exitCode !== ExitCode::SUCCESS) {
             // e.g. a broken config or a file rector can not parse, this is no change that could be applied
-            throw new StopException($exitCode, 'Rector failed for ' . $file . ' with exit code ' . $exitCode);
+            throw StopException::rectorFailed($file, $exitCode);
         }
 
         return true;
@@ -301,7 +348,7 @@ final class PartialCommand extends Command
     {
         $exitCode = $this->runCommand($this->rectorCommand('--no-diffs', $file));
         if ($exitCode !== ExitCode::SUCCESS) {
-            throw new StopException($exitCode, 'Rector failed for ' . $file . ' with exit code ' . $exitCode);
+            throw StopException::rectorFailed($file, $exitCode);
         }
 
         $this->cache->setProcessed($file);

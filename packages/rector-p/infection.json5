@@ -28,7 +28,7 @@
             // the default of --config is only shown in --help
             "ignore": ["Andersundsehr\\RectorP\\PartialCommand::configure"],
             "ignoreSourceCodeByRegex": [
-                // the style tags around a single value, e.g. writeln('<fg=gray>' . $command . '</>')
+                // swaps the style tags around a single value, e.g. writeln('<fg=gray>' . $command . '</>')
                 "\\$this->output->writeln\\('<(error|fg=gray)>' \\. [^.]+ \\. '</(error)?>'(, OutputInterface::VERBOSITY_\\w+)?\\);",
                 // the fallback for Symfony < 7.2, VERBOSITY_SILENT is 8 as well
                 ".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*",
@@ -36,10 +36,7 @@
         },
         "ConcatOperandRemoval": {
             "ignore": ["Andersundsehr\\RectorP\\PartialCommand::configure"],
-            "ignoreSourceCodeByRegex": [
-                "\\$this->output->writeln\\('<(error|fg=gray)>' \\. [^.]+ \\. '</(error)?>'(, OutputInterface::VERBOSITY_\\w+)?\\);",
-                ".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*",
-            ],
+            "ignoreSourceCodeByRegex": [".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*"],
         },
         "Ternary": {
             "ignoreSourceCodeByRegex": [".*defined\\(OutputInterface::class \\. '::VERBOSITY_SILENT'\\).*"],
@@ -63,14 +60,6 @@
         "CastInt": {
             // ceil() returns a whole number, PHP uses it as array index with or without the cast
             "ignoreSourceCodeByRegex": ["\\$chunkSize = \\(int\\)ceil\\(.*"],
-        },
-        "TrueValue": {
-            // shouldClearCache only matters between separate processes, RectorPBinaryTest checks it
-            "ignore": ["Andersundsehr\\RectorP\\PartialCommand::getAllFiles"],
-        },
-        "BitwiseOr": {
-            // pretty print and unescaped slashes only change how the progress file looks
-            "ignore": ["Andersundsehr\\RectorP\\Cache::setProcessed"],
         },
         "UnwrapArrayFilter": {
             // isProcessed() compares with ===, so a value that is not a string never matches either way

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Andersundsehr\RectorP\Tests;
 
 use Andersundsehr\RectorP\Cache;
+use JsonException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -87,6 +88,19 @@ final class CacheTest extends TestCase
         $cache->setProcessed($this->file);
 
         self::assertFileExists($this->directory . '/cache.json');
+    }
+
+    public function testFileNameThatIsNotUtf8Throws(): void
+    {
+        $file = $this->directory . "/\xff.php";
+        if (@file_put_contents($file, '<?php echo 1;') === false) {
+            self::markTestSkipped('the file system does not allow file names that are not UTF-8');
+        }
+
+        $cache = new Cache($this->directory);
+
+        $this->expectException(JsonException::class);
+        $cache->setProcessed($file);
     }
 
     public function testClearWithoutProgressDoesNothing(): void

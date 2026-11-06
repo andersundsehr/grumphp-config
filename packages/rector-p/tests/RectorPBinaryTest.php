@@ -38,7 +38,12 @@ final class RectorPBinaryTest extends TestCase
 
     public function testPrintedNextChunkCommandWorksInTheShell(): void
     {
-        $firstChunk = $this->runBinary(['-c', 'custom.php', '--chunk', '1/2', 'src']);
+        // the path of the binary has a space as well
+        $binary = $this->project->progressDirectory . '/my bin/rector-p';
+        mkdir(dirname($binary));
+        symlink((string)realpath(__DIR__ . '/../rector-p'), $binary);
+
+        $firstChunk = $this->runBinary(['-c', 'custom.php', '--chunk', '1/2', 'src'], $binary);
 
         self::assertSame(0, $firstChunk['exitCode'], $firstChunk['output']);
         self::assertTrue($this->project->isListConverted('A Space'));
@@ -46,9 +51,9 @@ final class RectorPBinaryTest extends TestCase
 
         $nextCommand = $this->nextChunkCommand($firstChunk['output']);
         $arguments = $this->splitShellArguments($nextCommand);
-        self::assertSame(__DIR__ . '/../rector-p', $arguments[0]);
+        self::assertSame($binary, $arguments[0]);
 
-        $secondChunk = $this->runBinary(array_slice($arguments, 1));
+        $secondChunk = $this->runBinary(array_slice($arguments, 1), $arguments[0]);
 
         self::assertSame(0, $secondChunk['exitCode'], $secondChunk['output']);
         self::assertStringContainsString('All chunks done', $secondChunk['output']);
@@ -82,7 +87,7 @@ final class RectorPBinaryTest extends TestCase
      * @param list<string> $arguments
      * @return array{exitCode: int, output: string}
      */
-    private function runBinary(array $arguments): array
+    private function runBinary(array $arguments, string $binary = __DIR__ . '/../rector-p'): array
     {
         $environment = getenv();
         // rector-p calls rector from the PATH if it is not started from vendor/bin
@@ -91,7 +96,7 @@ final class RectorPBinaryTest extends TestCase
         $outputFile = $this->project->progressDirectory . '/output.txt';
 
         $process = proc_open(
-            [PHP_BINARY, __DIR__ . '/../rector-p', '--no-interaction', '--no-ansi', ...$arguments],
+            [PHP_BINARY, $binary, '--no-interaction', '--no-ansi', ...$arguments],
             [0 => ['file', '/dev/null', 'r'], 1 => ['file', $outputFile, 'a'], 2 => ['file', $outputFile, 'a']],
             $pipes,
             $this->project->directory,

@@ -7,12 +7,12 @@ namespace Andersundsehr\RectorP\Exception;
 use RuntimeException;
 
 /**
- * stops rector-p, the command returns the exit code
+ * stops rector-p, the command returns the code of the exception as exit code
  */
 final class StopException extends RuntimeException
 {
-    public function __construct(public readonly int $exitCode, string $message = '')
+    public static function rectorFailed(string $file, int $exitCode): self
     {
-        parent::__construct($message);
+        return new self('Rector failed for ' . $file . ' with exit code ' . $exitCode, $exitCode);
     }
 }

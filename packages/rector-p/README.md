@@ -39,9 +39,9 @@ vendor/bin/rector-p src/Controller/MyController.php src/Controller/MyOtherContro
 
 ### What happens
 
-1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. It collects the files from the configured `paths`, or from the paths you pass as arguments. The files are sorted by name. If there are no files, it stops with `No files found`.
+1. `rector-p` finds the Rector configuration like Rector does: the file given with `--config`, otherwise `rector.php` or `rector.dist.php` in the current directory. It collects the files from the configured `paths`, or from the paths you pass as arguments, with the file extensions of the configuration (`withFileExtensions()`). Paths may be glob patterns like Rector's, a path that matches nothing stops `rector-p` with an error. The files are sorted by name. If there are no files, it stops with `No files found`.
 
-   For this list `rector-p` clears Rector's result cache, like `rector --clear-cache` does. Otherwise Rector would leave out files it already checked, and the list and the chunks would change from run to run. Which files are left to do is decided by the progress of `rector-p` (see below).
+   For this list `rector-p` uses an empty cache of its own instead of Rector's result cache. Otherwise Rector would leave out files it already checked, and the list and the chunks would change from run to run. Rector's result cache stays as it is. Which files are left to do is decided by the progress of `rector-p` (see below).
 2. For each file it runs `rector process --dry-run <file>` with that configuration, which shows the diff.
 3. If Rector has nothing to change, the file is marked as done. If Rector fails, for example because of a broken configuration, `rector-p` stops with Rector's exit code. Otherwise you choose:
 
@@ -105,7 +105,7 @@ Options:
 
 This package is developed in the monorepo [andersundsehr/grumphp-config](https://github.com/andersundsehr/grumphp-config/tree/main/packages/rector-p). Please open issues and pull requests there.
 
-The tests in `tests/` run `rector-p` with real Rector runs against small temporary projects. They run as part of `vendor/bin/grumphp run` in this package, or alone:
+The tests in `tests/` run `rector-p` against small temporary projects. Most of them use a fake Rector (`tests/Fixture/bin/rector`) that answers in milliseconds, a few use the real Rector. They run as part of `vendor/bin/grumphp run` in this package, or alone:
 
 ```bash
 composer install

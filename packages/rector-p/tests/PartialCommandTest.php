@@ -9,12 +9,16 @@ use Andersundsehr\RectorP\Cache;
 use Andersundsehr\RectorP\Exception\StopException;
 use Andersundsehr\RectorP\PartialCommand;
 use Andersundsehr\RectorP\RectorPApplication;
+use FilesystemIterator;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rector\Configuration\Option;
 use Rector\Configuration\Parameter\SimpleParameterProvider;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -399,6 +403,94 @@ final class PartialCommandTest extends TestCase
         $this->runRectorP(['--chunk', '1/3']);
     }
 
+    public function testInvalidChunkIsReportedBeforeTheFilesAreListed(): void
+    {
+        mkdir($this->project->directory . '/empty');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid chunk config given 1-2');
+
+        $this->runRectorP(['--chunk', '1-2', 'empty']);
+    }
+
+    /**
+     * @return iterable<string, array{list<string>, string}>
+     */
+    public static function missingPaths(): iterable
+    {
+        yield 'typo' => [['src/Controler'], 'src/Controler'];
+        yield 'glob pattern without match' => [['lib*'], 'lib*'];
+        yield 'one of two' => [['src', 'tests'], 'tests'];
+    }
+
+    /**
+     * @param list<string> $paths
+     */
+    #[DataProvider('missingPaths')]
+    public function testPathsThatMatchNothingFail(array $paths, string $expected): void
+    {
+        $result = $this->runRectorP($paths);
+
+        self::assertSame(1, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('These paths match no file or directory: ' . $expected . PHP_EOL, $result['output']);
+        self::assertSame([], $this->project->rectorCalls());
+    }
+
+    public function testGlobPatternsAreAccepted(): void
+    {
+        $result = $this->runRectorP(['s*c/A*']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Total files 1', $result['output']);
+        self::assertTrue($this->project->isListConverted('A Space'));
+    }
+
+    public function testFileExtensionsOfTheConfigAreUsed(): void
+    {
+        file_put_contents(
+            $this->project->directory . '/extensions.php',
+            '<?php return ' . RectorConfig::class . "::configure()->withPaths([__DIR__ . '/src'])->withFileExtensions(['php', 'phtml']);",
+        );
+        file_put_contents($this->project->directory . '/src/view.phtml', "<?php list(\$a, \$b) = [1, 2]; ?>\n");
+
+        $result = $this->runRectorP(['-c', 'extensions.php']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Total files 3', $result['output']);
+        self::assertStringContainsString('[$a, $b]', (string)file_get_contents($this->project->directory . '/src/view.phtml'));
+    }
+
+    /**
+     * rector leaves out files that its result cache marks as unchanged.
+     * rector-p must list all files and must not touch that cache.
+     */
+    public function testListsAllFilesWithoutTouchingTheResultCacheOfRector(): void
+    {
+        $this->project->writeSource('A Space', true);
+        $this->project->writeSource('B', true);
+        $this->project->writeSource('C');
+        // the real rector caches A Space and B as unchanged
+        $this->runRealRector(['process', '--dry-run', '--no-progress-bar', '--config=custom.php']);
+        $rectorCacheFiles = $this->filesIn($this->project->directory . '/var/rector-cache');
+        self::assertNotSame([], $rectorCacheFiles);
+        $temporaryDirectories = glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [];
+
+        $result = $this->runRectorP(['-c', 'custom.php']);
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString('Total files 3', $result['output']);
+        self::assertSame($rectorCacheFiles, $this->filesIn($this->project->directory . '/var/rector-cache'));
+        self::assertSame($temporaryDirectories, glob(sys_get_temp_dir() . '/rector-p-file-list-*') ?: [], 'rector-p must remove its own cache directory');
+    }
+
+    public function testNextChunkCommandQuotesTheBinaryIfNeeded(): void
+    {
+        $result = $this->runRectorP(['--chunk', '1/2'], binary: '/my project/vendor/bin/rector-p');
+
+        self::assertSame(0, $result['exitCode'], $result['output']);
+        self::assertStringContainsString(PHP_EOL . "'/my project/vendor/bin/rector-p' --chunk 2/2" . PHP_EOL, $result['output']);
+    }
+
     public function testEmptyFileListIsNoError(): void
     {
         mkdir($this->project->directory . '/empty');
@@ -456,6 +548,37 @@ final class PartialCommandTest extends TestCase
     }
 
     /**
+     * @param list<string> $arguments
+     */
+    private function runRealRector(array $arguments): void
+    {
+        $process = proc_open(
+            [PHP_BINARY, (string)realpath(__DIR__ . '/../vendor/bin/rector'), ...$arguments],
+            [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            $pipes,
+            $this->project->directory,
+        );
+        self::assertIsResource($process);
+        proc_close($process);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function filesIn(string $directory): array
+    {
+        $files = [];
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            assert($file instanceof SplFileInfo);
+            $files[] = $file->getPathname();
+        }
+
+        sort($files);
+        return $files;
+    }
+
+    /**
      * @param array{exitCode: int, output: string} $result
      */
     private function checkedFiles(array $result): int
@@ -468,11 +591,16 @@ final class PartialCommandTest extends TestCase
     /**
      * @param list<string> $arguments
      * @param list<string> $answers answers to the questions; without answers the command runs without interaction
+     * @param string $binary how rector-p was started
      * @return array{exitCode: int, output: string}
      */
-    private function runRectorP(array $arguments, array $answers = [], int $verbosity = OutputInterface::VERBOSITY_NORMAL): array
-    {
-        $argv = ['vendor/bin/rector-p', ...$arguments];
+    private function runRectorP(
+        array $arguments,
+        array $answers = [],
+        int $verbosity = OutputInterface::VERBOSITY_NORMAL,
+        string $binary = 'vendor/bin/rector-p',
+    ): array {
+        $argv = [$binary, ...$arguments];
         $previousArgv = $_SERVER['argv'];
         $previousDirectory = (string)getcwd();
         // rector reads --config from the command line of the process
