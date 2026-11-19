@@ -391,6 +391,7 @@ final class PartialCommandTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid chunk config given ' . $chunk);
+        $this->expectExceptionCode(1791530005);
 
         $this->runRectorP(['--chunk', $chunk]);
     }
@@ -399,6 +400,7 @@ final class PartialCommandTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Total files 2 is less than total chunks 3');
+        $this->expectExceptionCode(1791530004);
 
         $this->runRectorP(['--chunk', '1/3']);
     }
@@ -409,6 +411,7 @@ final class PartialCommandTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid chunk config given 1-2');
+        $this->expectExceptionCode(1791530005);
 
         $this->runRectorP(['--chunk', '1-2', 'empty']);
     }
@@ -552,6 +555,7 @@ final class PartialCommandTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No paths found in configuration ' . $this->project->directory . '/no-paths.php');
+        $this->expectExceptionCode(1791530003);
 
         $this->runRectorP(['-c', 'no-paths.php']);
     }

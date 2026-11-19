@@ -117,13 +117,13 @@ The script refreshes the copy of the root configuration in every package with `r
 
 CI checks the root in two variants:
 
-- **with TYPO3:** CI installs `saschaegerer/phpstan-typo3` and `ssch/typo3-rector` and uses `phpstan-baseline.neon`.
+- **with TYPO3:** CI installs `saschaegerer/phpstan-typo3` and `ssch/typo3-rector` with `typo3/cms-core` `^13.4` or `^14.0` and uses `phpstan-baseline.neon`. Because `typo3/cms-core` is then in `require`, Rector also applies the TYPO3 sets, e.g. every exception needs a code.
 - **without TYPO3:** CI replaces `phpstan-baseline.neon` with `phpstan-baseline-without-typo3.neon`.
 
 If you change code that has entries in the baselines, update both files. To reproduce the TYPO3 variant locally, run the command from the workflow and do not commit the resulting changes to `composer.json`:
 
 ```bash
-TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector --no-progress --no-scripts
+TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector "typo3/cms-core:^14.0" --no-progress --no-scripts
 ```
 
 ## Continuous integration
@@ -132,11 +132,11 @@ The workflow [`run-grumphp-test.yml`](.github/workflows/run-grumphp-test.yml) ru
 
 | Job | What it does |
 | --- | --- |
-| `test` | `vendor/bin/grumphp run` in the root for PHP 8.2 to 8.5, each with and without TYPO3 |
+| `test` | `vendor/bin/grumphp run` in the root for PHP 8.2 to 8.5, each without TYPO3 and with TYPO3 13 and 14 |
 | `test-packages` | `vendor/bin/grumphp run` in the packages listed in the job matrix for PHP 8.2 to 8.5 |
 | `code-split` | After both test jobs succeeded, on pushes to `main` and on tags: publishes every package with `split.sh` |
 
-The jobs run in the `kanti/buildy` container images. For PHP 8.5, Composer is called with `--ignore-platform-req=php+`.
+The jobs run in the `kanti/buildy` container images.
 
 ## Commit messages
 
