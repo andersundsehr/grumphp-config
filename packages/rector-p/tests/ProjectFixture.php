@@ -131,7 +131,7 @@ final readonly class ProjectFixture
     {
         $realPath = realpath($path);
         if ($realPath === false) {
-            throw new RuntimeException('Could not resolve ' . $path);
+            throw new RuntimeException('Could not resolve ' . $path, 1791530009);
         }
 
         return $realPath;
