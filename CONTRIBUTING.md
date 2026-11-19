@@ -132,11 +132,11 @@ The workflow [`run-grumphp-test.yml`](.github/workflows/run-grumphp-test.yml) ru
 
 | Job | What it does |
 | --- | --- |
-| `test` | `vendor/bin/grumphp run` in the root for PHP 8.2 to 8.5, each with and without TYPO3 |
-| `test-packages` | `vendor/bin/grumphp run` in the packages listed in the job matrix for PHP 8.2 to 8.5 |
+| `test` | `vendor/bin/grumphp run` in the root for PHP 8.2 to 8.6, each with and without TYPO3 |
+| `test-packages` | `vendor/bin/grumphp run` in the packages listed in the job matrix for PHP 8.2 to 8.6 |
 | `code-split` | After both test jobs succeeded, on pushes to `main` and on tags: publishes every package with `split.sh` |
 
-The jobs run in the `kanti/buildy` container images. For PHP 8.5, Composer is called with `--ignore-platform-req=php+`.
+The jobs run in the `kanti/buildy` container images. For PHP 8.5 and 8.6, Composer is called with `--ignore-platform-req=php+`.
 
 ## Commit messages
 
