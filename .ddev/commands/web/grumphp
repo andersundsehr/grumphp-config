@@ -3,7 +3,6 @@
 ## Description: Run grumphp command inside the web container
 ## Usage: grumphp [args]
 ## Example: "ddev grumphp run" or "ddev grumphp git:init"
-## ProjectTypes: grumphp
 ## ExecRaw: true
 ## MutagenSync: true
 

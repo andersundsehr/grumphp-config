@@ -15,6 +15,6 @@ parameters:
   convention.rector_clear-cache: false
   convention.fractor_ignore_pattern: {  }
   convention.fractor_enable: true
-  convention.fractor_config: rector.php
+  convention.fractor_config: fractor.php
   convention.fractor_clear-cache: false
   convention.phpstan_level: null

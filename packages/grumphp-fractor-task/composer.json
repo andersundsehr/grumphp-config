@@ -12,7 +12,7 @@
   ],
   "support": {
     "issues": "https://github.com/andersundsehr/grumphp-config/issues",
-    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task"
+    "source": "https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-fractor-task"
   },
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",

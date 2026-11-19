@@ -129,34 +129,25 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
     private function createRectorConfig(): void
     {
-        if (!file_exists(getcwd() . '/rector.php')) {
-            copy(dirname(__DIR__, 2) . '/rector.php', getcwd() . '/rector.php');
-            $this->message('rector.php file created', 'yellow');
-        }
+        $this->createFileIfMissing('rector.php');
     }
 
     /* @todo: only if it is a typo3 project */
     private function createFractorConfig(): void
     {
-        if (!file_exists(getcwd() . '/fractor.php')) {
-            copy(dirname(__DIR__, 2) . '/fractor.php', getcwd() . '/fractor.php');
-            $this->message('fractor.php file created', 'yellow');
-        }
+        $this->createFileIfMissing('fractor.php');
     }
 
     private function createGrumphpConfig(): void
     {
         $grumphpPath = getcwd() . '/grumphp.yml';
         $grumphpTemplatePath = dirname(__DIR__, 2) . '/grumphp.yml';
-        if (!file_exists($grumphpPath)) {
-            $defaultImport = [
-                'imports' => [
-                    ['resource' => 'vendor/pluswerk/grumphp-config/grumphp.yml'],
-                ],
-            ];
-            file_put_contents($grumphpPath, Yaml::dump($defaultImport, 2, 2));
-            $this->message('grumphp.yml file created', 'yellow');
-        }
+        $defaultImport = [
+            'imports' => [
+                ['resource' => 'vendor/pluswerk/grumphp-config/grumphp.yml'],
+            ],
+        ];
+        $this->createFileIfMissing('grumphp.yml', Yaml::dump($defaultImport, 2, 2));
 
         $data = Yaml::parseFile($grumphpPath);
         assert(is_array($data));
@@ -194,16 +185,28 @@ final class Plugin implements PluginInterface, EventSubscriberInterface
 
     private function createPhpStanConfig(): void
     {
-        $fileNames = ['phpstan.neon', 'phpstan-baseline.neon'];
-        foreach ($fileNames as $fileName) {
-            if (!file_exists(getcwd() . '/' . $fileName)) {
-                copy(dirname(__DIR__, 2) . '/' . $fileName, getcwd() . '/' . $fileName);
-                $this->message($fileName . ' file created', 'yellow');
-            }
-        }
+        $this->createFileIfMissing('phpstan.neon');
+        // new projects get an empty baseline, the baseline of this package lists errors of this package only
+        $this->createFileIfMissing('phpstan-baseline.neon', "parameters:\n\tignoreErrors: []\n");
     }
 
     // HELPER:
+
+    /**
+     * creates the file in the project root, existing files are never overwritten.
+     * without $content the file of this package with the same name is copied
+     */
+    private function createFileIfMissing(string $fileName, ?string $content = null): void
+    {
+        $targetPath = getcwd() . '/' . $fileName;
+        if (file_exists($targetPath)) {
+            return;
+        }
+
+        $content ??= (string)file_get_contents(dirname(__DIR__, 2) . '/' . $fileName);
+        file_put_contents($targetPath, $content);
+        $this->message($fileName . ' file created', 'yellow');
+    }
 
     private function message(string $message, ?string $color = null): void
     {

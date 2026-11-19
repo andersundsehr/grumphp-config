@@ -1,50 +1,91 @@
 [![Packagist](https://img.shields.io/packagist/v/pluswerk/grumphp-bom-task.svg?style=flat-square)](https://packagist.org/packages/pluswerk/grumphp-bom-task)
 [![Packagist](https://img.shields.io/packagist/l/pluswerk/grumphp-bom-task.svg?style=flat-square)](https://opensource.org/licenses/LGPL-3.0)
-[![Travis](https://img.shields.io/travis/Kanti/LJSON.svg?style=flat-square)](https://travis-ci.org/Pluswerk/grumphp-bom-task)
-[![Code Climate](https://img.shields.io/codeclimate/maintainability/pluswerk/grumphp-bom-task.svg?style=flat-square)](https://codeclimate.com/github/pluswerk/grumphp-bom-task)
-[![SymfonyInsight Grade](https://img.shields.io/symfony/i/grade/69cf4b58-b856-4f79-a3da-a89291eae102.svg?style=flat-square)](https://insight.symfony.com/projects/69cf4b58-b856-4f79-a3da-a89291eae102)
 
-# grumphp-bom-task
+# pluswerk/grumphp-bom-task
 
-Force files to have no BOM via GrumPHP
+A [GrumPHP](https://github.com/phpro/grumphp) task that fails if a file starts with a UTF-8 byte order mark (BOM), and the `fixbom` command that removes it.
 
-### grumphp.yml:
+Most editors do not show a BOM, but it causes real problems: in a PHP file it is sent as output before `<?php`, and `declare(strict_types=1)` is no longer the first statement. JSON parsers and shell scripts often fail on it as well.
 
-````yml
-parameters:
-    tasks:
-        plus_bom_fixer:
-            triggered_by:  [php, css, scss, less, json, sql, yml, txt]
-    extensions:
-        - PLUS\GrumPHPBomTask\ExtensionLoader
-````
+> This task is part of [`pluswerk/grumphp-config`](https://github.com/andersundsehr/grumphp-config). If you use that package, the task is already installed and configured.
 
-### Upgrade from andersundsehr/grumphp-bom-task
+## Requirements
 
-If you come from [andersundsehr/grumphp-bom-task](https://github.com/andersundsehr/grumphp-bom-task), change the extensions Loader path in the grumphp.yml file. 
+- PHP 8.2 or newer
+- GrumPHP 2
+- the `file` command line tool
 
-from:
+## Installation
 
-````yml
-parameters:
-    tasks:
-        aus_bom_fixer:
-            triggered_by:  [php, css, scss, less, json, sql, yml, txt]
-    extensions:
-        - AUS\GrumPHPBomTask\ExtensionLoader
-````
+```bash
+composer require --dev pluswerk/grumphp-bom-task
+```
 
-to:
+Register the extension and the task in your `grumphp.yml`:
 
-````yml
-parameters:
-    tasks:
-        plus_bom_fixer:
-            triggered_by:  [php, css, scss, less, json, sql, yml, txt]
-    extensions:
-        - PLUS\GrumPHPBomTask\ExtensionLoader
-````
+```yaml
+grumphp:
+  tasks:
+    plus_bom_fixer:
+      triggered_by: [php, css, scss, less, json, sql, yml, txt]
+  extensions:
+    - PLUS\GrumPHPBomTask\ExtensionLoader
+```
 
-### Composer
+## Options
 
-``composer require --dev pluswerk/grumphp-bom-task``
+**triggered_by**
+
+*Default: `[php, css, scss, less, json, sql, yml, txt]`*
+
+File extensions to check. Extend the list if you need more, for example `yaml`, `xlf`, `html` or `typoscript`.
+
+The task also accepts GrumPHP's [`metadata`](https://github.com/phpro/grumphp/blob/v2.x/doc/tasks.md#metadata) options, e.g. `priority`.
+
+## How it works
+
+The task runs with `vendor/bin/grumphp run` and in the `pre-commit` hook; in the hook it checks only the staged files.
+
+For each file with a matching extension it calls `file <path>` and looks for `BOM` in the output. If the `file` command is missing or fails, the file counts as a file without BOM.
+
+The task does not change files. If it finds a BOM, it fails and prints the affected files together with a command that fixes them:
+
+```text
+src/Example.php has BOM and should be fixed
+you can use this to fix them:
+./vendor/bin/fixbom 'src/Example.php'
+```
+
+## `fixbom`
+
+```bash
+vendor/bin/fixbom file1 [file2 ...]
+```
+
+Removes a UTF-8 BOM from the start of each given file. The file permissions and the group are kept. Files without a BOM stay unchanged; files that do not exist are reported and skipped.
+
+## Upgrading from the `AUS` version
+
+Older versions were published as `andersundsehr/grumphp-bom-task` with the namespace `AUS`. Rename the task and the extension in your `grumphp.yml`:
+
+| Old | New |
+| --- | --- |
+| `aus_bom_fixer` | `plus_bom_fixer` |
+| `AUS\GrumPHPBomTask\ExtensionLoader` | `PLUS\GrumPHPBomTask\ExtensionLoader` |
+
+If your `grumphp.yml` still lists tasks and extensions under `parameters:`, move them under `grumphp:`; GrumPHP 1.0 and newer only read them there.
+
+## Contributing
+
+This package is developed in the monorepo [andersundsehr/grumphp-config](https://github.com/andersundsehr/grumphp-config/tree/main/packages/grumphp-bom-task). Please open issues and pull requests there.
+
+## License
+
+[LGPL-3.0-or-later](LICENSE.txt)
+
+# with ♥️ from anders und sehr GmbH
+
+> If something did not work 😮  
+> or you appreciate this Extension 🥰 let us know.
+
+> We are hiring https://www.andersundsehr.com/karriere/

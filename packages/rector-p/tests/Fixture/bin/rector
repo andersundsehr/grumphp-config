@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * A fake rector for the rector-p tests, much faster than a real rector run.
+ *
+ * - a file with "list($a, $b)" has changes: the dry run exits with 2, the real run replaces it with "[$a, $b]"
+ * - a file with "function broken(" fails with exit code 1
+ * - a file with "fail on apply" has changes, but applying them fails with exit code 1
+ *
+ * Every call is logged as a JSON line to rector-calls.log in the current directory.
+ */
+
+declare(strict_types=1);
+
+$arguments = array_slice($argv, 1);
+file_put_contents(getcwd() . '/rector-calls.log', json_encode($arguments, JSON_THROW_ON_ERROR) . PHP_EOL, FILE_APPEND);
+
+$file = (string)end($arguments);
+$source = (string)file_get_contents($file);
+if (str_contains($source, 'function broken(')) {
+    echo 'Could not process "' . $file . '"' . PHP_EOL;
+    exit(1);
+}
+
+if (!str_contains($source, 'list($a, $b)')) {
+    exit(0);
+}
+
+if (in_array('--dry-run', $arguments, true)) {
+    echo 'would change ' . $file . PHP_EOL;
+    exit(2);
+}
+
+if (str_contains($source, 'fail on apply')) {
+    echo 'Could not write "' . $file . '"' . PHP_EOL;
+    exit(1);
+}
+
+file_put_contents($file, str_replace('list($a, $b)', '[$a, $b]', $source));
+exit(0);
