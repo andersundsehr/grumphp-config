@@ -81,7 +81,7 @@ Composer asks whether it may run the Composer plugins that come with this packag
 In addition, on every `composer install` and `composer update` the plugin
 
 - adds `convention.*` parameters that are new in the installed version to your `grumphp.yml`, as long as the first import in that file is `vendor/pluswerk/grumphp-config/grumphp.yml`. Your own values stay unchanged. The file is rewritten in this case, so YAML comments in it are lost.
-- installs `saschaegerer/phpstan-typo3` and `ssch/typo3-rector` as dev dependencies in TYPO3 projects (see [TYPO3 projects](#typo3-projects)).
+- installs `a9f/typo3-fractor`, `saschaegerer/phpstan-typo3` and `ssch/typo3-rector` as dev dependencies in TYPO3 projects (see [TYPO3 projects](#typo3-projects)).
 - removes the outdated settings `extra.grumphp.config-default-path` and `extra.pluswerk/grumphp-config` from your `composer.json`.
 
 GrumPHP itself installs the git hooks during `composer install`.
@@ -278,7 +278,7 @@ vendor/bin/rector-p
 - uses the TYPO3 set for the lowest TYPO3 version that your `composer.json` allows (`FractorSettings::sets(true)`),
 - formats TypoScript with 2 spaces, indented conditions and conditions closed with `[end]` (`FractorSettings::options()`).
 
-In projects without TYPO3 there are no sets. Because Fractor needs at least one rule, `FractorSettings::rules()` then adds a single TypoScript rule, which has no effect on projects without TypoScript.
+In projects without TYPO3 only the Fractor core is installed, without `a9f/typo3-fractor`, so it also works with Symfony 8. There are no sets and no rules then, and Fractor only prints a warning.
 
 ## PHPStan
 

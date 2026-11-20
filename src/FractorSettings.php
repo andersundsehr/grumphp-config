@@ -23,7 +23,7 @@ final class FractorSettings
     {
         $setList = null;
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
+        if (!$minimalTypo3Version || !class_exists(Typo3LevelSetList::class)) {
             return [];
         }
 
@@ -60,7 +60,7 @@ final class FractorSettings
     public static function options(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
+        if (!$minimalTypo3Version || !class_exists(TypoScriptProcessorOption::class)) {
             return [];
         }
 
@@ -83,7 +83,12 @@ final class FractorSettings
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {
-            // we need at least one rule to run fractor and we install fractor even if typo3 is not installed
+            // a9f/typo3-fractor is only installed in TYPO3 projects, without rules Fractor only prints a warning
+            if (!class_exists(RemoveUseCacheHashFromTypolinkTypoScriptFractor::class)) {
+                return [];
+            }
+
+            // we need at least one rule to run fractor without a warning
             return [
                 RemoveUseCacheHashFromTypolinkTypoScriptFractor::class,
             ];
