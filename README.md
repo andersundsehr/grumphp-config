@@ -278,7 +278,7 @@ vendor/bin/rector-p
 - uses the TYPO3 set for the lowest TYPO3 version that your `composer.json` allows (`FractorSettings::sets(true)`),
 - formats TypoScript with 2 spaces, indented conditions and conditions closed with `[end]` (`FractorSettings::options()`).
 
-In projects without TYPO3 only the Fractor core is installed, without `a9f/typo3-fractor`, so it also works with Symfony 8. There are no sets and no rules then, and Fractor only prints a warning.
+In projects without TYPO3 `a9f/typo3-fractor` is not installed, because its TypoScript parser does not allow Symfony 8. There are no sets then. `FractorSettings::rules()` adds `FormatOnlyFractor`, a rule that changes nothing: Fractor needs at least one rule to run, and then formats XML, XLIFF, YAML, Fluid and .htaccess files.
 
 ## PHPStan
 

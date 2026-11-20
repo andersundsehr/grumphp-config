@@ -8,9 +8,9 @@ use a9f\Fractor\Application\Contract\FractorRule;
 use a9f\Typo3Fractor\Set\Typo3LevelSetList;
 use a9f\Typo3Fractor\Set\Typo3SetList;
 use a9f\FractorTypoScript\Configuration\TypoScriptProcessorOption;
-use a9f\Typo3Fractor\TYPO3v10\TypoScript\RemoveUseCacheHashFromTypolinkTypoScriptFractor;
 use Helmich\TypoScriptParser\Parser\Printer\PrettyPrinterConditionTermination;
 use Helmich\TypoScriptParser\Parser\Printer\PrettyPrinterConfiguration;
+use PLUS\GrumPHPConfig\Fractor\FormatOnlyFractor;
 
 use function array_filter;
 
@@ -82,15 +82,10 @@ final class FractorSettings
     public static function rules(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
-            // a9f/typo3-fractor is only installed in TYPO3 projects, without rules Fractor only prints a warning
-            if (!class_exists(RemoveUseCacheHashFromTypolinkTypoScriptFractor::class)) {
-                return [];
-            }
-
-            // we need at least one rule to run fractor without a warning
+        if (!$minimalTypo3Version || !class_exists(Typo3LevelSetList::class)) {
+            // without TYPO3 sets Fractor needs one rule to run, its file processors then format the files
             return [
-                RemoveUseCacheHashFromTypolinkTypoScriptFractor::class,
+                FormatOnlyFractor::class,
             ];
         }
 

@@ -19,7 +19,12 @@
   "require": {
     "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0 || ~8.6.0",
     "composer-plugin-api": "^2.1.0",
-    "a9f/fractor": "^0.5.8 || ^1.0.0",
+    "a9f/fractor": "^1.0.0",
+    "a9f/fractor-fluid": "^1.0.0",
+    "a9f/fractor-htaccess": "^1.0.0",
+    "a9f/fractor-xliff": "^1.0.0",
+    "a9f/fractor-xml": "^1.0.0",
+    "a9f/fractor-yaml": "^1.0.0",
     "andersundsehr/grumphp-fractor-task": "^11.0.0",
     "andersundsehr/phpstan-git-files": "^11.0.0",
     "andersundsehr/rector-p": "^11.0.0",

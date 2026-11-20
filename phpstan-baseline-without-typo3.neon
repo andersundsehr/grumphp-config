@@ -67,12 +67,6 @@ parameters:
 			path: src/FractorSettings.php
 
 		-
-			message: '#^Method PLUS\\GrumPHPConfig\\FractorSettings\:\:rules\(\) should return array\<class\-string\<a9f\\Fractor\\Application\\Contract\\FractorRule\>\> but returns array\<int, string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/FractorSettings.php
-
-		-
 			message: '#^Access to constant CODE_QUALITY on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3SetList\.$#'
 			identifier: class.notFound
 			count: 1
