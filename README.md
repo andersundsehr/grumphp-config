@@ -36,7 +36,7 @@ The shared configuration is updated with `composer update`, so all projects get 
 
 ## Requirements
 
-- PHP 8.2, 8.3, 8.4 or 8.5
+- PHP 8.2, 8.3, 8.4, 8.5 or 8.6
 - Composer 2.1 or newer
 - git; the project must be a git repository, because file lists and hooks come from git
 - the `file` command line tool, which the BOM check uses
