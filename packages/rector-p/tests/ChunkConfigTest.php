@@ -44,20 +44,21 @@ final class ChunkConfigTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{int, int, string}>
+     * @return iterable<string, array{int, int, string, int}>
      */
     public static function invalidChunks(): iterable
     {
-        yield 'no chunks' => [1, 0, 'totalChunks must be greater than 0 give:1/0'];
-        yield 'chunk zero' => [0, 2, 'chunkNumber must be between 1 and totalChunks give:0/2'];
-        yield 'chunk after the last one' => [3, 2, 'chunkNumber must be between 1 and totalChunks give:3/2'];
+        yield 'no chunks' => [1, 0, 'totalChunks must be greater than 0 give:1/0', 1791530006];
+        yield 'chunk zero' => [0, 2, 'chunkNumber must be between 1 and totalChunks give:0/2', 1791530007];
+        yield 'chunk after the last one' => [3, 2, 'chunkNumber must be between 1 and totalChunks give:3/2', 1791530008];
     }
 
     #[DataProvider('invalidChunks')]
-    public function testInvalidChunkThrows(int $chunkNumber, int $totalChunks, string $message): void
+    public function testInvalidChunkThrows(int $chunkNumber, int $totalChunks, string $message, int $code): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($message);
+        $this->expectExceptionCode($code);
 
         new ChunkConfig($chunkNumber, $totalChunks);
     }
