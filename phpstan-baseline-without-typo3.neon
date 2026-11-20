@@ -25,6 +25,48 @@ parameters:
 			path: packages/rector-p/src/PartialCommand.php
 
 		-
+			message: '#^Access to constant TYPO3_11 on an unknown class a9f\\Typo3Fractor\\Set\\Typo3SetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Access to constant TYPO3_12 on an unknown class a9f\\Typo3Fractor\\Set\\Typo3SetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Access to constant TYPO3_13 on an unknown class a9f\\Typo3Fractor\\Set\\Typo3SetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Access to constant TYPO3_14 on an unknown class a9f\\Typo3Fractor\\Set\\Typo3SetList\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Access to constant EnforceEnd on an unknown class Helmich\\TypoScriptParser\\Parser\\Printer\\PrettyPrinterConditionTermination\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Access to constant INDENTATION_STYLE_SPACES on an unknown class Helmich\\TypoScriptParser\\Parser\\Printer\\PrettyPrinterConfiguration\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
+			message: '#^Method PLUS\\GrumPHPConfig\\FractorSettings\:\:options\(\) has invalid return type Helmich\\TypoScriptParser\\Parser\\Printer\\PrettyPrinterConditionTermination\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/FractorSettings.php
+
+		-
 			message: '#^Access to constant CODE_QUALITY on an unknown class Ssch\\TYPO3Rector\\Set\\Typo3SetList\.$#'
 			identifier: class.notFound
 			count: 1
