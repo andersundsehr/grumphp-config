@@ -161,7 +161,7 @@ Every maintenance branch with `split.sh` (`10.x` and newer) needs the branch han
 For each package, `split.sh`
 
 1. clones `github.com/andersundsehr/<package>` into `tmp/<package>`,
-2. chooses the branch of the package repository: `main` holds the newest major version. If the major version of the monorepo (the `dev-main as <version>` aliases in `require-dev` of the root `composer.json`) is older than the one in `extra.branch-alias` on `main` of the package repository, e.g. for a release from `11.x` after `12.0.0`, it uses the branch `<major>.x` and creates it from the last `<major>.*` tag if it does not exist yet. Otherwise such a release would overwrite `main` with the older major version,
+2. checks out the branch `<major>.x` of the package repository, e.g. `12.x`. Every major version has its own branch there, `main` is no longer used. The major version comes from the `dev-main as <version>` aliases in `require-dev` of the root `composer.json`. A new branch starts at the last `<major>.*` tag, or at the default branch for a new major version,
 3. copies `packages/<package>` into the clone, without files ignored by `.gitignore`,
 4. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them to that branch,
 5. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
