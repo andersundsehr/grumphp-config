@@ -239,10 +239,9 @@ Skips rules that change code in ways we do not want:
 
 | Rule | Reason |
 | --- | --- |
-| `ExplicitNullableObjectInstanceRector`, `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector`, `ObjectExplicitBoolCompareRector` | Keep `$object === null`, `if ($object)` and `$object && …` instead of `instanceof` checks |
+| `ExplicitNullableObjectInstanceRector` | Keep `$object === null`, `if ($object)` and `$object && …` instead of `instanceof` checks |
 | `ArrayExplicitBoolCompareRector` | Keep `if ($array)` instead of `if ($array !== [])` |
 | `IssetOnPropertyObjectToPropertyExistsRector` | Keep `isset($this->x)` |
-| `ListSwapArrayOrderRector` | Can swap the order back and forth on every run |
 | `PrivatizeFinalClassPropertyRector` for `*/Model/*` | Model properties stay `protected` |
 
 In TYPO3 projects it also skips:
