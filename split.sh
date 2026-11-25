@@ -50,33 +50,23 @@ function printToSummary() {
 git config --global user.email || git config --global user.email "m.vogel@andersundsehr.com"
 git config --global user.name || git config --global user.name "Automated Splitter"
 
-# major version of this monorepo from the root composer.json, e.g. "dev-main as 12.0.0" -> 12
+# every major version has its own branch in the package repositories, e.g. 12.x
+# the major version comes from the root composer.json, e.g. "dev-main as 12.0.0" -> 12
 sourceMajor=$(jq -r '[(."require-dev" // {})[] | strings | select(startswith("dev-main as ")) | ltrimstr("dev-main as ") | split(".")[0]][0] // empty' composer.json)
+if [ -z "${sourceMajor}" ]; then
+  echo -e "\033[31m[ERROR] no \"dev-main as <version>\" in require-dev of composer.json\033[0m"
+  exit 1
+fi
+targetBranch="${sourceMajor}.x"
 
 for package in $packages ; do
   echo -e "\033[36m[INFO] ${package} started\033[0m"
   rm -rf tmp/${package}/
   git clone https://${GH_TOKEN}@github.com/andersundsehr/${package}.git tmp/${package}/
 
-  # main of the package repository holds the newest major version.
-  # An older major version (e.g. a release from the branch 11.x) goes to a branch of that name,
-  # starting at the last tag of that major version, so it does not overwrite main.
-  targetBranch=main
-  # major version on main of the package repository from extra.branch-alias.dev-main, e.g. 12.0.x-dev -> 12
-  mainMajor=$(jq -r '.extra["branch-alias"]["dev-main"] // ""' tmp/${package}/composer.json | cut -d. -f1)
-  if [ -n "${sourceMajor}" ] && [ -n "${mainMajor}" ] && [ "${sourceMajor}" -lt "${mainMajor}" ]; then
-    targetBranch="${sourceMajor}.x"
-    if git -C tmp/${package}/ rev-parse --verify --quiet "refs/remotes/origin/${targetBranch}" > /dev/null; then
-      git -C tmp/${package}/ checkout -B "${targetBranch}" "origin/${targetBranch}"
-    else
-      lastTag=$(git -C tmp/${package}/ tag --list "${sourceMajor}.*" --sort=-v:refname | sed -n 1p)
-      if [ -z "${lastTag}" ]; then
-        echo -e "\033[31m[ERROR] ${package} has no branch ${targetBranch} and no tag ${sourceMajor}.* to start it from\033[0m"
-        exit 1
-      fi
-      git -C tmp/${package}/ checkout -B "${targetBranch}" "${lastTag}"
-    fi
-  fi
+  # a new branch starts at the last tag of its major version, or at the default branch for a new major version
+  startPoint=$(git -C tmp/${package}/ rev-parse --verify --quiet "refs/remotes/origin/${targetBranch}" || git -C tmp/${package}/ tag --list "${sourceMajor}.*" --sort=-v:refname | sed -n 1p)
+  git -C tmp/${package}/ checkout -B "${targetBranch}" ${startPoint}
 
   rsync -acv --delete --exclude='.git' --exclude-from=packages/${package}/.gitignore --exclude-from=.gitignore packages/${package}/ tmp/${package}/
   git -C tmp/${package}/ add .
