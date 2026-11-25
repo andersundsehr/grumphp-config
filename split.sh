@@ -71,16 +71,17 @@ for package in $packages ; do
   rsync -acv --delete --exclude='.git' --exclude-from=packages/${package}/.gitignore --exclude-from=.gitignore packages/${package}/ tmp/${package}/
   git -C tmp/${package}/ add .
 
-  # if there is nothing to commit we can skip the commit and push
+  # if there is nothing to commit we can skip the commit
   if [ -z "$(git -C tmp/${package}/ status --porcelain)" ]; then
     # color yellow
     printToSummary "🟡 Nothing to commit for \`${package}\` (${targetBranch}) https://github.com/andersundsehr/${package}"
   else
-  git -C tmp/${package}/ commit -m "${commitMessage}"
-
-  git -C tmp/${package}/ push --follow-tags origin "HEAD:refs/heads/${targetBranch}"
-    printToSummary "✅ Pushed to remote \`${package}\` (${targetBranch}) https://github.com/andersundsehr/${package}/tree/${targetBranch}"
+    git -C tmp/${package}/ commit -m "${commitMessage}"
   fi
+
+  # push also without a commit, so a new branch is created
+  git -C tmp/${package}/ push origin "HEAD:refs/heads/${targetBranch}"
+  printToSummary "✅ Pushed to remote \`${package}\` (${targetBranch}) https://github.com/andersundsehr/${package}/tree/${targetBranch}"
 
   currentMonoRepoTag=$(git tag --points-at HEAD)
   if [ ! -z "$currentMonoRepoTag" ]; then
