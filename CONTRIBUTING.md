@@ -114,6 +114,13 @@ Everything:
 
 The script refreshes the copy of the root configuration in every package with `rsync`, runs `composer update` and `vendor/bin/grumphp run` in every package and finally in the root. It stops at the first failure.
 
+### PHPStan configuration of the projects
+
+There are two ways to bring PHPStan configuration into the projects:
+
+- `extra.phpstan.includes` in `composer.json` (like `phpstan-disallowed-calls.neon`): `phpstan/extension-installer` loads it in every project, also in existing ones after the next update. PHPStan loads it before the `phpstan.neon` of the project, so the project can add to it or replace parameters with `!`. Use it for rules that should apply everywhere.
+- The template `phpstan.neon`: the plugin copies it only if the project has none, so changes reach only new projects. Use it for settings the project owns. `level` and `paths` must be here: PHPStan reads them only from the project config and its includes, so `andersundsehr/phpstan-git-files` (it sets `paths`) is included here and can not move to `extra.phpstan`. A file that is included both ways stops PHPStan with "This file is included multiple times".
+
 ### PHPStan baselines
 
 CI checks the root in two variants:
