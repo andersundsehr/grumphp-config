@@ -64,12 +64,9 @@ final class RectorSettings
     {
         $phpVersion = VersionUtility::getMinimalPhpVersion() ?? PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
         [$major, $minor] = explode('.', $phpVersion, 3);
-        $phpFile = constant(SetList::class . '::PHP_' . $major . $minor);
-        if ($entirety) {
-            $phpFile = constant(LevelSetList::class . '::UP_TO_PHP_' . $major . $minor);
-        }
-
-        assert(is_string($phpFile));
+        $phpLevelFile = constant(LevelSetList::class . '::UP_TO_PHP_' . $major . $minor);
+        assert(is_string($phpLevelFile));
+        $phpFile = $entirety ? $phpLevelFile : self::phpSet($major . $minor, $phpLevelFile);
 
         return array_filter(
             [
@@ -84,6 +81,21 @@ final class RectorSettings
                 ...self::internalSetsTypo3($entirety),
             ],
         );
+    }
+
+    /**
+     * Rector 2.9 removed the constants SetList::PHP_*, the set files are still next to the level sets
+     */
+    private static function phpSet(string $version, string $phpLevelFile): string
+    {
+        $constant = SetList::class . '::PHP_' . $version;
+        if (defined($constant)) {
+            $phpFile = constant($constant);
+            assert(is_string($phpFile));
+            return $phpFile;
+        }
+
+        return dirname($phpLevelFile, 2) . '/php' . $version . '.php';
     }
 
     /**
