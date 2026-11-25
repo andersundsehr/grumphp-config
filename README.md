@@ -214,24 +214,35 @@ Add more [GrumPHP tasks](https://github.com/phpro/grumphp/blob/v2.x/doc/tasks.md
 
 ## Rector
 
-The generated `rector.php`
+The generated `rector.php` calls `RectorSettings::apply()` with the Rector configuration builder and returns it:
+
+```php
+return RectorSettings::apply(RectorConfig::configure())
+    ->withSkip([
+        __DIR__ . '/src/Example',
+    ]);
+```
+
+`RectorSettings::apply()`
 
 - checks all PHP files that are tracked in git,
 - runs in parallel and caches results in `var/cache/rector`,
 - imports class names and removes unused imports,
-- uses the rule sets from `RectorSettings::sets(true)` and skips the rules from `RectorSettings::skip()`.
+- uses the prepared sets `deadCode`, `codeQuality`, `codingStyle`, `typeDeclarations` and `privatization`,
+- uses the PHP sets (`withPhpSets()`) for the lowest PHP version that your `composer.json` allows in `require.php` (for `^8.2` that is PHP 8.2). Without a PHP requirement the PHP version that runs Rector is used,
+- in TYPO3 projects: uses the TYPO3 sets up to the lowest TYPO3 version that your `composer.json` allows in `require.typo3/cms-core`, plus the TYPO3 `CODE_QUALITY` and `GENERAL` sets. TYPO3 10 to 14 are supported, `dev-main` counts as 14,
+- skips the rules from [`RectorSettings::skip()`](#rectorsettingsskip).
 
-Add your own sets, rules and skips to `rector.php`. The file belongs to your project.
+The file belongs to your project. Call more methods of the builder after `apply()`:
 
-### `RectorSettings::sets(bool $entirety = false)`
+- `withSkip()`, `withSets()` and `withRules()` add to the configuration.
+- `withPaths()` and `withCache()` replace it.
+- `withPhpSets()` can only be called once. To use your own PHP version, call `RectorSettings::apply(RectorConfig::configure(), phpSets: false)` and then `withPhpSets(php83: true)`.
+- `RectorSettings::apply(RectorConfig::configure(), typo3: false)` leaves out the TYPO3 sets.
 
-Returns these sets:
+### Older `rector.php` files
 
-- `CODE_QUALITY`, `CODING_STYLE`, `DEAD_CODE`, `PRIVATIZATION`, `TYPE_DECLARATION`
-- the PHP set for the lowest PHP version that your `composer.json` allows in `require.php` (for `^8.2` that is PHP 8.2). Without a PHP requirement the PHP version that runs Rector is used.
-- in TYPO3 projects: the TYPO3 set for the lowest TYPO3 version that your `composer.json` allows in `require.typo3/cms-core`, plus the TYPO3 `CODE_QUALITY` and `GENERAL` sets. TYPO3 10 to 14 are supported, `dev-main` counts as 14.
-
-With `$entirety = true` (the default in the generated file) the "up to" level sets are used, e.g. `UP_TO_PHP_82` instead of `PHP_82`, so all upgrades up to that version are checked.
+Older `rector.php` files configure Rector with `RectorSettings::sets()` and `RectorSettings::skip()` and keep working in version 12. `sets()` returns the prepared sets above, `SetList::PHP_VERSION_BASED_SET` and the TYPO3 sets; its `$entirety` parameter is ignored. To switch to `apply()`, replace your `rector.php` with the [template](rector.php) and move your own skips, sets and rules into it.
 
 ### `RectorSettings::skip()`
 
@@ -255,7 +266,7 @@ Skip entries for rules that no longer exist in the installed Rector version, or 
 
 ### `RectorSettings::getLevel(int $level = 9999)`
 
-Helper for introducing Rector step by step. It returns the number given with `--level=N` on the Rector command line, or `$level` if there is none. It removes the option from the arguments, so Rector does not reject it, and passes the value to Rector's parallel worker processes through the environment variable `RECTOR_CLI_OPTION_LEVEL`. Use the return value in your `rector.php` wherever Rector expects a level.
+Deprecated, it will be removed in version 13. Rector has its own levels, e.g. `withTypeCoverageLevel()`. Helper for introducing Rector step by step. It returns the number given with `--level=N` on the Rector command line, or `$level` if there is none. It removes the option from the arguments, so Rector does not reject it, and passes the value to Rector's parallel worker processes through the environment variable `RECTOR_CLI_OPTION_LEVEL`. Use the return value in your `rector.php` wherever Rector expects a level.
 
 ### Deprecated methods
 
@@ -273,9 +284,12 @@ vendor/bin/rector-p
 
 [Fractor](https://github.com/andreaswolf/fractor) refactors non-PHP files in TYPO3 projects, such as TypoScript, FlexForms and YAML. The generated `fractor.php`
 
+- calls `FractorSettings::apply()` with the Fractor configuration builder and returns it, like `rector.php`,
 - checks all files that are tracked in git,
-- uses the TYPO3 set for the lowest TYPO3 version that your `composer.json` allows (`FractorSettings::sets(true)`),
+- uses the TYPO3 sets up to the lowest TYPO3 version that your `composer.json` allows (`FractorSettings::sets()`),
 - formats TypoScript with 2 spaces, indented conditions and conditions closed with `[end]` (`FractorSettings::options()`).
+
+Call more methods of the builder after `apply()`, e.g. `withSkip()`. `withOptions()` replaces the options of `apply()`. Older `fractor.php` files with `FractorSettings::sets(true)` keep working.
 
 In projects without TYPO3 there are no sets. Because Fractor needs at least one rule, `FractorSettings::rules()` then adds a single TypoScript rule, which has no effect on projects without TypoScript.
 
