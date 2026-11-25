@@ -1,0 +1,31 @@
+# Debug output that must not be committed.
+# Loaded automatically through extra.phpstan.includes in composer.json (phpstan/extension-installer).
+# Allow a call in your phpstan.neon with ignoreErrors or allowIn, see https://github.com/spaze/phpstan-disallowed-calls
+parameters:
+	disallowedFunctionCalls:
+		-
+			function:
+				- 'var_dump()'
+				- 'debug_zval_dump()'
+				- 'debug_print_backtrace()'
+				- 'dump()'
+				- 'dd()'
+				- 'debug()'
+				- 'xdebug_break()'
+				- 'xdebug_var_dump()'
+				- 'phpinfo()'
+			message: 'debug output must not be committed'
+		-
+			function:
+				- 'print_r()'
+				- 'var_export()'
+			message: 'debug output must not be committed, pass true as the second argument to get a string'
+			allowParamsAnywhere:
+				2: true
+	disallowedStaticCalls:
+		-
+			method:
+				- 'TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump()'
+				- 'TYPO3\CMS\Core\Utility\DebugUtility::*()'
+				- 'Symfony\Component\VarDumper\VarDumper::dump()'
+			message: 'debug output must not be committed'
