@@ -14,6 +14,7 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 | `src/VersionUtility.php` | Reads the lowest PHP and TYPO3 version from the project's `composer.json` |
 | `grumphp.yml` | The shared GrumPHP configuration that projects import; also the configuration for this repository |
 | `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository |
+| `phpstan-disallowed-calls.neon` | Debug calls that PHPStan reports in projects (`spaze/phpstan-disallowed-calls`); `extra.phpstan.includes` in `composer.json` lets `phpstan/extension-installer` load it automatically |
 | `phpstan-baseline.neon` | PHPStan baseline of this repository for CI runs with TYPO3 packages; new projects get an empty baseline instead |
 | `phpstan-baseline-without-typo3.neon` | PHPStan baseline of this repository for CI runs without TYPO3 packages |
 | `.gitattributes` | Files that are not part of the Composer package (`export-ignore`), e.g. `packages/`, the baselines and the scripts |

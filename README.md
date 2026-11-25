@@ -296,6 +296,8 @@ parameters:
 - [`andersundsehr/phpstan-git-files`](packages/phpstan-git-files) adds all PHP files tracked in git to the analysis, so you do not need to maintain `paths`.
 - [`phpstan/extension-installer`](https://github.com/phpstan/extension-installer) loads installed PHPStan extensions automatically, e.g. `bnf/phpstan-psr-container` and, in TYPO3 projects, `saschaegerer/phpstan-typo3`.
 - [`phpstan/phpstan-deprecation-rules`](https://github.com/phpstan/phpstan-deprecation-rules) is installed with this package and reports the use of deprecated classes, methods, functions and constants, e.g. of TYPO3 or Rector. Fix them before the next update removes them, or add them to `phpstan-baseline.neon` with `vendor/bin/phpstan --generate-baseline`.
+- [`phpstan/phpstan-phpunit`](https://github.com/phpstan/phpstan-phpunit) is installed with this package. PHPStan understands PHPUnit assertions such as `assertInstanceOf()` and `assertNotNull()` and the types of mock objects, and checks some assertions, e.g. `assertSame(true, …)` should be `assertTrue(…)`.
+- [`spaze/phpstan-disallowed-calls`](https://github.com/spaze/phpstan-disallowed-calls) is installed with this package and reports debug output that must not be committed: `var_dump()`, `print_r()` and `var_export()` (allowed with `true` as the second argument), `dump()`, `dd()`, `debug()`, `debug_zval_dump()`, `debug_print_backtrace()`, `xdebug_break()`, `xdebug_var_dump()`, `phpinfo()`, `DebuggerUtility::var_dump()`, `DebugUtility::*()` of TYPO3 and `VarDumper::dump()` of Symfony. The list is in [`phpstan-disallowed-calls.neon`](phpstan-disallowed-calls.neon); it is loaded automatically. Add your own rules to `parameters.disallowedFunctionCalls` etc. in your `phpstan.neon`.
 - `phpstan-baseline.neon` holds known errors, so you can start at level 8 in an existing project and fix old errors over time.
 
 Write all current errors into the baseline:
@@ -334,6 +336,8 @@ composer require --dev pluswerk/grumphp-config:^12.0.0 --with-all-dependencies
 ```
 
 - Version 12 installs [`phpstan/phpstan-deprecation-rules`](#phpstan), so PHPStan reports the use of deprecated code.
+- Version 12 installs [`spaze/phpstan-disallowed-calls`](#phpstan) with a list of debug functions, so PHPStan reports calls like `var_dump()` or `DebuggerUtility::var_dump()`.
+- Version 12 installs [`phpstan/phpstan-phpunit`](#phpstan), so PHPStan understands PHPUnit tests better and checks some assertions.
 - Remove the calls of `RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` from your `rector.php`, see [Deprecated methods](#deprecated-methods).
 - Fix the other findings, or add them to `phpstan-baseline.neon` with `vendor/bin/phpstan analyse --generate-baseline`.
 
