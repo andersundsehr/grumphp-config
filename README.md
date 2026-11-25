@@ -259,7 +259,7 @@ Helper for introducing Rector step by step. It returns the number given with `--
 
 ### Deprecated methods
 
-`RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` return empty arrays. The TYPO3 sets and skips are part of `sets()` and `skip()` now. Older `rector.php` files may still call them; you can remove these calls. They are not marked as `@deprecated`, so that PHPStan does not report these calls (see [PHPStan](#phpstan)).
+`RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` return empty arrays. The TYPO3 sets and skips are part of `sets()` and `skip()` now. Older `rector.php` files may still call them; you can remove these calls. Both are marked as `@deprecated`, so PHPStan reports these calls (see [PHPStan](#phpstan)).
 
 ### Introducing Rector in large projects
 
