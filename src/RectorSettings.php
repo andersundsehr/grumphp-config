@@ -99,8 +99,10 @@ final class RectorSettings
     }
 
     /**
+     * Kept so that older rector.php files still work, the TYPO3 sets are part of sets() now.
+     * Not marked as deprecated, so phpstan-deprecation-rules does not report the calls in the projects.
+     *
      * @return array<int, string>
-     * @deprecated can be removed
      */
     public static function setsTypo3(bool $entirety = false): array
     {
@@ -208,8 +210,10 @@ final class RectorSettings
     }
 
     /**
+     * Kept so that older rector.php files still work, the TYPO3 skips are part of skip() now.
+     * Not marked as deprecated, so phpstan-deprecation-rules does not report the calls in the projects.
+     *
      * @return array<int|string, list<string>|string>
-     * @deprecated can be removed
      */
     public static function skipTypo3(): array
     {
