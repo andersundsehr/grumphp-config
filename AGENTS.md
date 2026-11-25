@@ -9,7 +9,7 @@ This repository is a monorepo: the shared GrumPHP configuration in the root and 
 
 ## Rector version and deprecated rules
 
-- Rector removes deprecated code in minor releases. `composer.json` and `packages/rector-p/composer.json` require it with a caret constraint (`^2.8.0`); the nightly CI shows when a new version breaks something. If it breaks something that can not be fixed here, add a `conflict` and remove it when it is fixed. See [Rector version](CONTRIBUTING.md#rector-version).
+- Rector removes deprecated code in minor releases. `composer.json` and `packages/rector-p/composer.json` require it with a caret constraint (`^2.8.0`); the nightly CI shows when a new version breaks something. Fix it here, or report it to the package that has to fix it. See [Rector version](CONTRIBUTING.md#rector-version).
 - `phpstan/phpstan-deprecation-rules` reports the use of deprecated Rector classes, e.g. rules in `RectorSettings::skip()`. Fix these findings, do not put them into the baseline.
 - When you remove a rule from `RectorSettings::skip()` because Rector deprecated it, raise the minimum Rector version in both `composer.json` files to the first version in which the rule is deprecated. `filterOutDeprecatedClasses()` already drops deprecated rules, so the skip entry was only needed for older versions; with the raised minimum they can no longer be installed. If Rector names a replacement rule, skip the replacement and make sure the minimum version contains it. Example: `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector` and `ObjectExplicitBoolCompareRector` are deprecated since Rector 2.8.0, which also brings their replacement `ExplicitNullableObjectInstanceRector`, so the constraint is at least `^2.8.0`.
 
