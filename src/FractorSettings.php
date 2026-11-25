@@ -8,9 +8,9 @@ use a9f\Fractor\Application\Contract\FractorRule;
 use a9f\Typo3Fractor\Set\Typo3LevelSetList;
 use a9f\Typo3Fractor\Set\Typo3SetList;
 use a9f\FractorTypoScript\Configuration\TypoScriptProcessorOption;
-use a9f\Typo3Fractor\TYPO3v10\TypoScript\RemoveUseCacheHashFromTypolinkTypoScriptFractor;
 use Helmich\TypoScriptParser\Parser\Printer\PrettyPrinterConditionTermination;
 use Helmich\TypoScriptParser\Parser\Printer\PrettyPrinterConfiguration;
+use PLUS\GrumPHPConfig\Fractor\FormatOnlyFractor;
 
 use function array_filter;
 
@@ -23,7 +23,7 @@ final class FractorSettings
     {
         $setList = null;
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
+        if (!$minimalTypo3Version || !class_exists(Typo3LevelSetList::class)) {
             return [];
         }
 
@@ -60,7 +60,7 @@ final class FractorSettings
     public static function options(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
+        if (!$minimalTypo3Version || !class_exists(TypoScriptProcessorOption::class)) {
             return [];
         }
 
@@ -82,10 +82,10 @@ final class FractorSettings
     public static function rules(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
-        if (!$minimalTypo3Version) {
-            // we need at least one rule to run fractor and we install fractor even if typo3 is not installed
+        if (!$minimalTypo3Version || !class_exists(Typo3LevelSetList::class)) {
+            // without TYPO3 sets Fractor needs one rule to run, its file processors then format the files
             return [
-                RemoveUseCacheHashFromTypolinkTypoScriptFractor::class,
+                FormatOnlyFractor::class,
             ];
         }
 
