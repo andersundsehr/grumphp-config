@@ -242,7 +242,7 @@ The file belongs to your project. Call more methods of the builder after `apply(
 
 ### Older `rector.php` files
 
-Older `rector.php` files configure Rector with `RectorSettings::sets()` and `RectorSettings::skip()` and keep working in version 12. `sets()` returns the prepared sets above, `SetList::PHP_VERSION_BASED_SET` and the TYPO3 sets; its `$entirety` parameter is ignored. To switch to `apply()`, replace your `rector.php` with the [template](rector.php) and move your own skips, sets and rules into it.
+Older `rector.php` files configure Rector with `RectorSettings::sets()` and `RectorSettings::skip()` and keep working in version 12. `sets()` returns the prepared sets above, `SetList::PHP_VERSION_BASED_SET` and the TYPO3 sets; `sets(false)` is no longer supported and triggers a deprecation, the sets always contain all upgrades. To switch to `apply()`, replace your `rector.php` with the [template](rector.php) and move your own skips, sets and rules into it.
 
 ### `RectorSettings::skip()`
 
