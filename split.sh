@@ -50,10 +50,8 @@ function printToSummary() {
 git config --global user.email || git config --global user.email "m.vogel@andersundsehr.com"
 git config --global user.name || git config --global user.name "Automated Splitter"
 
-# major version of a package from extra.branch-alias.dev-main, e.g. 12.0.x-dev -> 12
-function majorVersion() {
-  jq -r '.extra["branch-alias"]["dev-main"] // empty' "$1" | cut -d. -f1
-}
+# major version of this monorepo from the root composer.json, e.g. "dev-main as 12.0.0" -> 12
+sourceMajor=$(jq -r '[(."require-dev" // {})[] | strings | select(startswith("dev-main as ")) | ltrimstr("dev-main as ") | split(".")[0]][0] // empty' composer.json)
 
 for package in $packages ; do
   echo -e "\033[36m[INFO] ${package} started\033[0m"
@@ -64,8 +62,8 @@ for package in $packages ; do
   # An older major version (e.g. a release from the branch 11.x) goes to a branch of that name,
   # starting at the last tag of that major version, so it does not overwrite main.
   targetBranch=main
-  sourceMajor=$(majorVersion packages/${package}/composer.json)
-  mainMajor=$(majorVersion tmp/${package}/composer.json)
+  # major version on main of the package repository from extra.branch-alias.dev-main, e.g. 12.0.x-dev -> 12
+  mainMajor=$(jq -r '.extra["branch-alias"]["dev-main"] // ""' tmp/${package}/composer.json | cut -d. -f1)
   if [ -n "${sourceMajor}" ] && [ -n "${mainMajor}" ] && [ "${sourceMajor}" -lt "${mainMajor}" ]; then
     targetBranch="${sourceMajor}.x"
     if git -C tmp/${package}/ rev-parse --verify --quiet "refs/remotes/origin/${targetBranch}" > /dev/null; then
