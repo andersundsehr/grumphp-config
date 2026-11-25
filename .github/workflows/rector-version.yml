@@ -1,0 +1,65 @@
+name: Rector version
+
+# Rector removes deprecated code in minor releases, so composer.json and packages/rector-p/composer.json
+# allow only one minor version of Rector (~X.Y.0, see CONTRIBUTING.md).
+# This workflow opens a pull request when a new minor or major version of Rector is released.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write # push the branch
+  pull-requests: write # open the pull request
+  actions: write # start the grumphp workflow for the new branch
+
+jobs:
+  raise-constraint:
+    name: Raise the Rector constraint
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the latest version of Rector
+        id: rector
+        run: |
+          current=$(jq -r '.require["rector/rector"]' composer.json)
+          latest=$(curl -fsS https://repo.packagist.org/p2/rector/rector.json \
+            | jq -r '.packages["rector/rector"][].version' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          constraint="~${latest%.*}.0"
+          branch="rector-${latest%.*}"
+          echo "current: $current, latest: $latest, new constraint: $constraint"
+          if [ "$constraint" = "$current" ]; then
+            echo 'The constraint already allows the latest minor version.'
+          elif git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "The branch $branch already exists."
+          else
+            echo "constraint=$constraint" >> "$GITHUB_OUTPUT"
+            echo "branch=$branch" >> "$GITHUB_OUTPUT"
+            echo "version=${latest%.*}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Raise the constraint and open a pull request
+        if: steps.rector.outputs.constraint
+        env:
+          CONSTRAINT: ${{ steps.rector.outputs.constraint }}
+          BRANCH: ${{ steps.rector.outputs.branch }}
+          VERSION: ${{ steps.rector.outputs.version }}
+        run: |
+          for file in composer.json packages/rector-p/composer.json; do
+            sed -i -E "s#(\"rector/rector\": \")~[0-9.]+\"#\1${CONSTRAINT}\"#" "$file"
+            grep -q "\"rector/rector\": \"${CONSTRAINT}\"" "$file"
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$BRANCH"
+          git commit -am "[TASK] Allow Rector ${VERSION}"
+          git push origin "$BRANCH"
+          gh pr create --draft --head "$BRANCH" --title "[TASK] Allow Rector ${VERSION}" --body "Rector ${VERSION} is released. Rector removes deprecated code in minor releases, so this is a breaking change for us (see CONTRIBUTING.md).
+
+          - [ ] The CI is green, with and without TYPO3. \`ssch/typo3-rector\` has to support Rector ${VERSION}.
+          - [ ] Classes, constants and rules that Rector removed are no longer used (\`RectorSettings\`, \`rector-p\`)."
+          # a push with the GITHUB_TOKEN does not start workflows, workflow_dispatch does
+          gh workflow run run-grumphp-test.yml --ref "$BRANCH"

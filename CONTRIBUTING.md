@@ -144,7 +144,7 @@ Commit subjects use the TYPO3 prefixes `[FEATURE]`, `[BUGFIX]` and `[TASK]`. The
 
 ## Rector version
 
-Rector removes deprecated classes, constants and rules in minor releases. For example, Rector 2.9.0 removed `SetList::PHP_*` and rules that `ssch/typo3-rector` still used. So `composer.json` and `packages/rector-p/composer.json` allow only one minor version of Rector, with a tilde constraint such as `~2.8.0`. Treat a new minor version of Rector as a breaking change: raise the constraint in its own pull request and check it with and without TYPO3.
+Rector removes deprecated classes, constants and rules in minor releases. For example, Rector 2.9.0 removed `SetList::PHP_*` and rules that `ssch/typo3-rector` still used. So `composer.json` and `packages/rector-p/composer.json` allow only one minor version of Rector, with a tilde constraint such as `~2.8.0`. Treat a new minor version of Rector as a breaking change: raise the constraint in its own pull request and check it with and without TYPO3. Every Monday the workflow `.github/workflows/rector-version.yml` checks Packagist and opens such a pull request (`rector-<version>`) when a new minor or major version of Rector is released.
 
 ## Releases
 
