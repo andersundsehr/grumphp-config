@@ -154,16 +154,19 @@ Rector removes deprecated classes, constants and rules in minor releases. For ex
 
 Older major versions are maintained on branches such as `11.x`. A new major version needs the new version in the root `composer.json` (`^12.0.0`, `dev-main as 12.0.0`) and in `extra.branch-alias` of every package.
 
+Every maintenance branch with `split.sh` (`10.x` and newer) needs the branch handling described below. The `code-split` job runs `split.sh` from the tagged commit, so a fix of the script has to be ported to every maintenance branch that still gets releases.
+
 ### What `split.sh` does
 
 For each package, `split.sh`
 
 1. clones `github.com/andersundsehr/<package>` into `tmp/<package>`,
-2. copies `packages/<package>` into the clone, without files ignored by `.gitignore`,
-3. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them,
-4. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
+2. chooses the branch of the package repository: `main` holds the newest major version. If the major version in `extra.branch-alias` of `packages/<package>/composer.json` is older than the one on `main` of the package repository, e.g. for a release from `11.x` after `12.0.0`, it uses the branch `<major>.x` and creates it from the last `<major>.*` tag if it does not exist yet. Otherwise such a release would overwrite `main` with the older major version,
+3. copies `packages/<package>` into the clone, without files ignored by `.gitignore`,
+4. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them to that branch,
+5. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
 
-The script needs the GitHub CLI `gh` and a token with write access to the package repositories in `GH_TOKEN`. In CI the token comes from the secret `ACCESS_TOKEN` of the `code split` environment. Locally you can split a single package:
+The script needs the GitHub CLI `gh`, `jq` and a token with write access to the package repositories in `GH_TOKEN`. In CI the token comes from the secret `ACCESS_TOKEN` of the `code split` environment. Locally you can split a single package:
 
 ```bash
 GH_TOKEN=… ./split.sh rector-p
