@@ -6,19 +6,15 @@ namespace PLUS\GrumPHPConfig;
 
 use Composer\InstalledVersions;
 use InvalidArgumentException;
-use Rector\CodeQuality\Rector\Identical\FlipTypeControlToUseExclusiveTypeRector;
 use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
-use Rector\CodeQuality\Rector\If_\ObjectExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
 use Rector\Configuration\Deprecation\Contract\DeprecatedInterface;
-use Rector\Php70\Rector\Assign\ListSwapArrayOrderRector;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\PostRector\Rector\NameImportingPostRector;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
-use Rector\TypeDeclaration\Rector\BooleanAnd\BinaryOpNullableToInstanceofRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
@@ -159,20 +155,11 @@ final class RectorSettings
     {
         return self::filterOutDeprecatedClasses([
             /**
-             * Keep nullable object checks unchanged, including with Rector 2.8+.
-             * This rule replaces the individual nullable object rules skipped below.
+             * Keep nullable object checks unchanged:
+             * FROM: if ($dateTime === null) {, if ($object) {, if ($someClass && $someClass->someMethod()) {
+             * TO:   if (! $dateTime instanceof DateTime) {, if ($object instanceof SomeClass) {, ...
              */
             ExplicitNullableObjectInstanceRector::class,
-            /**
-             * FROM: if ($dateTime === null) {
-             * TO:   if (! $dateTime instanceof DateTime) {
-             */
-            FlipTypeControlToUseExclusiveTypeRector::class,
-            /**
-             * FROM: if ($someClass && $someClass->someMethod()) {
-             * TO:   if ($someClass instanceof SomeClass && $someClass->someMethod()) {
-             */
-            BinaryOpNullableToInstanceofRector::class,
             /**
              * FROM: protected string $name;
              * TO:   private string  $name;
@@ -183,20 +170,10 @@ final class RectorSettings
                 '/*/Model/*',
             ],
             /**
-             * DOCS: be careful, run this just once, since it can keep swapping order back and forth
-             * => we don't do it once!
-             */
-            ListSwapArrayOrderRector::class,
-            /**
              * FROM: if ($array) {
              * TO:   if ($array !== []) {
              */
             ArrayExplicitBoolCompareRector::class,
-            /**
-             * FROM: if ($object) {
-             * TO:   if ($object instanceof SomeClass) {
-             */
-            ObjectExplicitBoolCompareRector::class,
             /**
              * FROM: isset($this->x);
              * TO:   property_exists($this, 'x') && $this->x !== null;

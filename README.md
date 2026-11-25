@@ -239,10 +239,9 @@ Skips rules that change code in ways we do not want:
 
 | Rule | Reason |
 | --- | --- |
-| `ExplicitNullableObjectInstanceRector`, `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector`, `ObjectExplicitBoolCompareRector` | Keep `$object === null`, `if ($object)` and `$object && …` instead of `instanceof` checks |
+| `ExplicitNullableObjectInstanceRector` | Keep `$object === null`, `if ($object)` and `$object && …` instead of `instanceof` checks |
 | `ArrayExplicitBoolCompareRector` | Keep `if ($array)` instead of `if ($array !== [])` |
 | `IssetOnPropertyObjectToPropertyExistsRector` | Keep `isset($this->x)` |
-| `ListSwapArrayOrderRector` | Can swap the order back and forth on every run |
 | `PrivatizeFinalClassPropertyRector` for `*/Model/*` | Model properties stay `protected` |
 
 In TYPO3 projects it also skips:
@@ -260,7 +259,7 @@ Helper for introducing Rector step by step. It returns the number given with `--
 
 ### Deprecated methods
 
-`RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` return empty arrays. The TYPO3 sets and skips are part of `sets()` and `skip()` now. Older `rector.php` files may still call them; you can remove these calls.
+`RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` return empty arrays. The TYPO3 sets and skips are part of `sets()` and `skip()` now. Older `rector.php` files may still call them; you can remove these calls. Both are marked as `@deprecated`, so PHPStan reports these calls (see [PHPStan](#phpstan)).
 
 ### Introducing Rector in large projects
 
@@ -296,6 +295,7 @@ parameters:
 
 - [`andersundsehr/phpstan-git-files`](packages/phpstan-git-files) adds all PHP files tracked in git to the analysis, so you do not need to maintain `paths`.
 - [`phpstan/extension-installer`](https://github.com/phpstan/extension-installer) loads installed PHPStan extensions automatically, e.g. `bnf/phpstan-psr-container` and, in TYPO3 projects, `saschaegerer/phpstan-typo3`.
+- [`phpstan/phpstan-deprecation-rules`](https://github.com/phpstan/phpstan-deprecation-rules) is installed with this package and reports the use of deprecated classes, methods, functions and constants, e.g. of TYPO3 or Rector. Fix them before the next update removes them, or add them to `phpstan-baseline.neon` with `vendor/bin/phpstan --generate-baseline`.
 - `phpstan-baseline.neon` holds known errors, so you can start at level 8 in an existing project and fix old errors over time.
 
 Write all current errors into the baseline:
