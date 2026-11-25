@@ -16,6 +16,7 @@ use function array_filter;
 use function array_values;
 use function explode;
 use function shell_exec;
+use function trigger_error;
 
 final class FractorSettings
 {
@@ -47,11 +48,15 @@ final class FractorSettings
     /**
      * The TYPO3 set with all upgrades up to the lowest TYPO3 version of the project.
      *
-     * @param bool $entirety ignored, the set always contains all upgrades up to the version
+     * @param bool $entirety no longer supported: the set always contains all upgrades up to the version
      * @return array<int, string>
      */
     public static function sets(bool $entirety = true): array
     {
+        if (!$entirety) {
+            trigger_error('FractorSettings::sets(false) is no longer supported, the set contains all upgrades up to the version', E_USER_DEPRECATED);
+        }
+
         $setList = null;
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {

@@ -27,6 +27,7 @@ use function explode;
 use function is_string;
 use function putenv;
 use function shell_exec;
+use function trigger_error;
 
 final class RectorSettings
 {
@@ -61,9 +62,13 @@ final class RectorSettings
                 $rectorConfig->withPhpSets();
             } else {
                 // without a PHP requirement: the PHP version that runs Rector
-                $rectorConfig
-                    ->withPhpVersion(PHP_MAJOR_VERSION * 10000 + PHP_MINOR_VERSION * 100)
-                    ->withSets([SetList::PHP_VERSION_BASED_SET]);
+                $rectorConfig = match (PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION) {
+                    '8.2' => $rectorConfig->withPhpSets(php82: true),
+                    '8.3' => $rectorConfig->withPhpSets(php83: true),
+                    '8.4' => $rectorConfig->withPhpSets(php84: true),
+                    '8.5' => $rectorConfig->withPhpSets(php85: true),
+                    default => $rectorConfig->withPhpSets(php86: true),
+                };
             }
         }
 
@@ -116,11 +121,15 @@ final class RectorSettings
      * The PHP rules come from SetList::PHP_VERSION_BASED_SET, Rector applies the ones up to the PHP version
      * from require.php in composer.json, or the PHP version that runs Rector.
      *
-     * @param bool $entirety ignored, the sets always contain all upgrades up to the versions
+     * @param bool $entirety no longer supported: the sets always contain all upgrades up to the versions
      * @return array<int,string>
      */
     public static function sets(bool $entirety = true): array
     {
+        if (!$entirety) {
+            trigger_error('RectorSettings::sets(false) is no longer supported, the sets contain all upgrades up to the versions', E_USER_DEPRECATED);
+        }
+
         return array_filter(
             [
                 SetList::CODE_QUALITY, // YES
