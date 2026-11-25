@@ -153,7 +153,11 @@ Rector removes deprecated classes, constants and rules in minor releases. For ex
 2. Create a GitHub release in this repository with a new tag. Tags have no prefix, e.g. `11.2.1`. Use semantic versioning: a new major version for breaking changes.
 3. The tag push starts CI. After the tests, the `code-split` job publishes every package and releases it with the same version.
 
-Older major versions are maintained on branches such as `11.x`. A new major version needs the new version in the root `composer.json` (`^12.0.0`, `dev-main as 12.0.0`) and in `extra.branch-alias` of every package.
+Older major versions are maintained on branches such as `11.x`. A new major version needs:
+
+1. the new version in the root `composer.json` (`^12.0.0`, `dev-main as 12.0.0`) and in `extra.branch-alias` of every package,
+2. before its first release: the branch `<major>.x` in every package repository, created by hand from the newest commit of the previous major version, and set as the default branch there. `split.sh` pushes only when the package changed, so it does not create the branch on its own,
+3. a maintenance branch `<previous major>.x` in this repository, if the previous major version still gets releases.
 
 Every maintenance branch with `split.sh` (`10.x` and newer) needs the branch handling described below. The `code-split` job runs `split.sh` from the tagged commit, so a fix of the script has to be ported to every maintenance branch that still gets releases.
 
