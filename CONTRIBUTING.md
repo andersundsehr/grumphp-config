@@ -59,10 +59,10 @@ The repository also contains a `docker-compose.yml` with the `ghcr.io/pluswerk/p
 
 ## How the packages are wired
 
-- The root `composer.json` has a `path` repository for `packages/*`. It requires the packages with `^11.0.0` and, in `require-dev`, with `dev-main as 11.0.0`, so the root always uses the local package code.
+- The root `composer.json` has a `path` repository for `packages/*`. It requires the packages with `^12.0.0` and, in `require-dev`, with `dev-main as 12.0.0`, so the root always uses the local package code.
 - Each package has its own `composer.json` with two `path` repositories: `../../` for `pluswerk/grumphp-config` and `../*` for the other packages. `pluswerk/grumphp-config` is copied into the package's `vendor/` (`"symlink": false`), so every package is checked with the current configuration from the root.
 - After `composer update` in a package, its `post-update-cmd` scripts run `composer bump -D`, `composer normalize` and remove `vendor/pluswerk/grumphp-config/vendor` and `vendor/pluswerk/grumphp-config/packages` from the copy.
-- All packages share one version number. `extra.branch-alias` maps `dev-main` to the current major version (`11.0.x-dev` or `11.0-dev`).
+- All packages share one version number. `extra.branch-alias` maps `dev-main` to the current major version (`12.0.x-dev` or `12.0-dev`).
 
 ## Running the checks
 
@@ -152,7 +152,7 @@ Rector removes deprecated classes, constants and rules in minor releases. For ex
 2. Create a GitHub release in this repository with a new tag. Tags have no prefix, e.g. `11.2.1`. Use semantic versioning: a new major version for breaking changes.
 3. The tag push starts CI. After the tests, the `code-split` job publishes every package and releases it with the same version.
 
-Older major versions are maintained on branches such as `10.x`.
+Older major versions are maintained on branches such as `11.x`. A new major version needs the new version in the root `composer.json` (`^12.0.0`, `dev-main as 12.0.0`) and in `extra.branch-alias` of every package.
 
 ### What `split.sh` does
 
