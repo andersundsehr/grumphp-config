@@ -327,6 +327,16 @@ composer update pluswerk/grumphp-config --with-all-dependencies
 - New `convention.*` parameters are added to your `grumphp.yml` automatically.
 - `rector.php`, `fractor.php`, `phpstan.neon` and `phpstan-baseline.neon` are not updated, because they belong to your project. To get the current templates, delete the files and run `composer update` again; then move your own changes back into the new files and regenerate the baseline.
 
+### From 11 to 12
+
+```bash
+composer require --dev pluswerk/grumphp-config:^12.0.0 --with-all-dependencies
+```
+
+- Version 12 installs [`phpstan/phpstan-deprecation-rules`](#phpstan), so PHPStan reports the use of deprecated code.
+- Remove the calls of `RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` from your `rector.php`, see [Deprecated methods](#deprecated-methods).
+- Fix the other findings, or add them to `phpstan-baseline.neon` with `vendor/bin/phpstan analyse --generate-baseline`.
+
 ## Packages in this repository
 
 This is a monorepo. Besides the configuration it contains the following packages. They are installed together with `pluswerk/grumphp-config`, but they can also be used on their own.
