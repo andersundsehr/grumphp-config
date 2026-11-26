@@ -11,3 +11,5 @@
 /phpstan-baseline-without-typo3.neon export-ignore
 /AGENTS.md export-ignore
 /CLAUDE.md export-ignore
+/tests/ export-ignore
+/phpunit.xml.dist export-ignore

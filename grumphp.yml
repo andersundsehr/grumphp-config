@@ -91,6 +91,21 @@ grumphp:
     # $DDEV_EXEC will be empty or be the path to ddev exec, so it will work in ddev projects and other projects. :) and inside and outside the ddev container.
     EXEC_GRUMPHP_COMMAND: "$DDEV_EXEC php"
     ENV:
+      # DDEV_WORKTREE_ROOT
+      # Will only be set in a linked git worktree inside the main worktree, if the main worktree has a .ddev folder.
+      # It is the path of the main worktree. DDEV mounts only the main worktree, at /var/www/html.
+      # git gives the common git dir without symbolic links. "pwd -P" removes them from the directory of the hook too,
+      # e.g. if you commit in a path with a symbolic link.
+      DDEV_WORKTREE_ROOT: '$(ROOT="$(cd "$(git rev-parse --git-common-dir)/.." && pwd)" && [ -d "$ROOT/.ddev" ] && case "$(pwd -P)" in ("$ROOT"/*) echo "$ROOT" ;; esac)'
+      # DDEV_WORKTREE
+      # Will only be set if DDEV_WORKTREE_ROOT is set: the directory and the git dir of the linked worktree in the container.
+      # Without them, ddev exec runs GrumPHP in the main worktree. The .git file of the linked worktree contains a path on
+      # the host, so git (GIT_DIR, GIT_WORK_TREE) and GrumPHP (GRUMPHP_GIT_REPOSITORY_DIR) get the paths in the container.
+      DDEV_WORKTREE: '$([ -n "$DDEV_WORKTREE_ROOT" ] && HERE="$(pwd -P)" && GIT_HERE="$(git rev-parse --absolute-git-dir)" && echo "--dir /var/www/html${HERE#"$DDEV_WORKTREE_ROOT"} GIT_DIR=/var/www/html${GIT_HERE#"$DDEV_WORKTREE_ROOT"} GIT_WORK_TREE=/var/www/html${HERE#"$DDEV_WORKTREE_ROOT"} GRUMPHP_GIT_REPOSITORY_DIR=/var/www/html${GIT_HERE#"$DDEV_WORKTREE_ROOT"}")'
       # DDEV_EXEC
       # Will only be set if: ddev is installed and the project has a .ddev folder and you are not inside the ddev container.
-      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && [ -d ".ddev" ] && DDEV="$(command -v ddev)" && [ -n "$DDEV" ] && echo "$DDEV exec FORCE_COLOR=1")'
+      DDEV_EXEC: '$([ -z "$IS_DDEV_PROJECT" ] && [ -d ".ddev" ] && DDEV="$(command -v ddev)" && [ -n "$DDEV" ] && echo "$DDEV exec $DDEV_WORKTREE FORCE_COLOR=1")'
+      # COMMIT_MSG_FILE
+      # The commit-msg hook of GrumPHP sets COMMIT_MSG_FILE to the path that git gives. In a linked worktree, this is a
+      # path in the git dir of the main worktree. If GrumPHP runs in the DDEV container, use the path in the container.
+      COMMIT_MSG_FILE: '$(if [ -n "$DDEV_EXEC" ] && [ -n "$DDEV_WORKTREE_ROOT" ]; then echo "/var/www/html${COMMIT_MSG_FILE#"$DDEV_WORKTREE_ROOT"}"; else echo "$COMMIT_MSG_FILE"; fi)'

@@ -65,6 +65,11 @@
       "PLUS\\GrumPHPConfig\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "PLUS\\GrumPHPConfig\\Tests\\": "tests/"
+    }
+  },
   "config": {
     "allow-plugins": {
       "a9f/fractor-extension-installer": true,

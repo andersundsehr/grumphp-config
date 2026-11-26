@@ -13,6 +13,7 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 | `src/RectorSettings.php`, `src/FractorSettings.php` | Rule sets and skips used by the generated `rector.php` and `fractor.php` |
 | `src/VersionUtility.php` | Reads the lowest PHP and TYPO3 version from the project's `composer.json` |
 | `grumphp.yml` | The shared GrumPHP configuration that projects import; also the configuration for this repository |
+| `tests/`, `phpunit.xml.dist` | PHPUnit tests of the root, e.g. for the git hooks that GrumPHP creates from `grumphp.yml` |
 | `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository. The packages do not commit `rector.php` and `fractor.php`, they get them from the plugin |
 | `phpstan-disallowed-calls.neon` | Debug calls that PHPStan reports in projects (`spaze/phpstan-disallowed-calls`); `extra.phpstan.includes` in `composer.json` lets `phpstan/extension-installer` load it automatically |
 | `phpstan-baseline.neon` | PHPStan baseline of this repository for CI runs with TYPO3 packages; new projects get an empty baseline instead |
@@ -85,6 +86,25 @@ The copy of `pluswerk/grumphp-config` in the package's `vendor/` is only refresh
 
 `rector-p` has PHPUnit tests in `packages/rector-p/tests`. Its `grumphp.yml` adds the `phpunit` task, so `vendor/bin/grumphp run` in `packages/rector-p` runs them too. PHPUnit is also a dev dependency of the root, because PHPStan and Rector in the root check the test files.
 
+### Tests of the root
+
+The root has PHPUnit tests in `tests/`:
+
+```bash
+vendor/bin/phpunit
+```
+
+The root `grumphp.yml` does not add the `phpunit` task, because projects import this file. CI runs the tests in its own step.
+
+`DdevGitHookTest` checks the `git_hook_variables` in `grumphp.yml`:
+
+- GrumPHP creates the hooks with `git:init` from the real `grumphp.yml`.
+- Each test commits in a new git repository, in the main worktree or in a linked worktree.
+- Fake `ddev` and `php` commands log their arguments, so the test sees how the hook starts GrumPHP.
+- `PATH` contains only these fakes, `git` and `cat`. A real `ddev` on your computer does not change the result.
+
+Run the tests whenever you change the `git_hook_variables`. Each part of the shell code must have a test that fails without it: remove the part, run the tests and make sure that one fails.
+
 ### Mutation testing (rector-p)
 
 [Infection](https://infection.github.io/) checks whether the `rector-p` tests notice changes in the code. Run it whenever you change code or tests in `packages/rector-p`:
@@ -140,7 +160,7 @@ The workflow [`run-grumphp-test.yml`](.github/workflows/run-grumphp-test.yml) ru
 
 | Job | What it does |
 | --- | --- |
-| `test` | `vendor/bin/grumphp run` in the root for PHP 8.2 to 8.6, each without TYPO3 and with TYPO3 13 and 14 |
+| `test` | `vendor/bin/grumphp run` and `vendor/bin/phpunit` in the root for PHP 8.2 to 8.6, each without TYPO3 and with TYPO3 13 and 14 |
 | `test-packages` | `vendor/bin/grumphp run` in the packages listed in the job matrix for PHP 8.2 to 8.6 |
 | `code-split` | After both test jobs succeeded, on pushes to `main` and on tags: publishes every package with `split.sh` |
 
