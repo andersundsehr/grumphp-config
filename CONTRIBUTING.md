@@ -98,12 +98,20 @@ The root `grumphp.yml` does not add the `phpunit` task, because projects import 
 
 `DdevGitHookTest` checks the `git_hook_variables` in `grumphp.yml`:
 
-- GrumPHP creates the hooks with `git:init` from the real `grumphp.yml`.
+- GrumPHP creates the hooks with `git:init` from the real `grumphp.yml`, once for GrumPHP in the root of the repository and once for each subdirectory that a test uses.
 - Each test commits in a new git repository, in the main worktree or in a linked worktree.
-- Fake `ddev` and `php` commands log their arguments, so the test sees how the hook starts GrumPHP.
-- `PATH` contains only these fakes, `git` and `cat`. A real `ddev` on your computer does not change the result.
+- Fake `ddev` and `php` commands log their arguments and `COMMIT_MSG_FILE`, so the test sees how the hook starts GrumPHP.
+- `PATH` contains only these fakes, `git`, `cat` and `sed`. A real `ddev` on your computer does not change the result.
+- For the paths of a linked worktree in the container, the test also replaces `/var/www/html` with the main worktree, as DDEV mounts it. Then it checks that the paths exist and that git finds the commit with `GIT_DIR` and `GIT_WORK_TREE`.
 
 Run the tests whenever you change the `git_hook_variables`. Each part of the shell code must have a test that fails without it: remove the part, run the tests and make sure that one fails.
+
+The fakes do not start a container. Before you open a pull request that changes the `git_hook_variables`, check the hooks once in the DDEV project of this repository:
+
+1. Make a linked worktree inside the project, e.g. `git worktree add var/worktrees/hook-check`.
+2. Run `composer install` in the new worktree with the command in [Git worktrees](README.md#git-worktrees). Composer installs GrumPHP there, and the GrumPHP plugin writes the hooks from the `grumphp.yml` of the worktree.
+3. Commit a change in the worktree. Make sure that GrumPHP checks the files of the worktree: a PHP file with a PHPStan error that only the worktree contains must stop the commit.
+4. Remove the worktree with `git worktree remove var/worktrees/hook-check`. Then run `ddev exec php vendor/bin/grumphp git:init` in the main worktree to write the hooks of the main worktree again.
 
 ### Mutation testing (rector-p)
 
