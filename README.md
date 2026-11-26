@@ -78,6 +78,17 @@ Composer asks whether it may run the Composer plugins that come with this packag
 
 `rector.php` and `fractor.php` are also created after `composer dump-autoload`.
 
+### Using the templates unchanged
+
+If you do not need any changes in `rector.php` or `fractor.php`, you can delete the file and add it to your `.gitignore`:
+
+```gitignore
+/rector.php
+/fractor.php
+```
+
+The plugin creates the files again after every `composer install`, `composer update` and `composer dump-autoload`, so everyone who installs the project gets them, and after deleting them you get the current templates. The packages in this repository do it this way. As soon as you need your own skips, sets or rules, remove the line from `.gitignore` and commit the file.
+
 In addition, on every `composer install` and `composer update` the plugin
 
 - adds `convention.*` parameters that are new in the installed version to your `grumphp.yml`, as long as the first import in that file is `vendor/pluswerk/grumphp-config/grumphp.yml`. Your own values stay unchanged. The file is rewritten in this case, so YAML comments in it are lost.
@@ -214,10 +225,10 @@ Add more [GrumPHP tasks](https://github.com/phpro/grumphp/blob/v2.x/doc/tasks.md
 
 ## Rector
 
-The generated `rector.php` calls `RectorSettings::apply()` with the Rector configuration builder and returns it:
+The generated `rector.php` calls `RectorSettings::apply()` and returns the Rector configuration builder:
 
 ```php
-return RectorSettings::apply(RectorConfig::configure())
+return RectorSettings::apply()
     ->withSkip([
         __DIR__ . '/src/Example',
     ]);
@@ -225,28 +236,25 @@ return RectorSettings::apply(RectorConfig::configure())
 
 `RectorSettings::apply()`
 
+- creates the builder with `RectorConfig::configure()`; to configure a builder of your own, pass it as the first parameter,
 - checks all PHP files that are tracked in git,
 - runs in parallel and caches results in `var/cache/rector`,
 - imports class names and removes unused imports,
 - uses the prepared sets `deadCode`, `codeQuality`, `codingStyle`, `typeDeclarations` and `privatization`,
 - uses the PHP sets (`withPhpSets()`) for the lowest PHP version that your `composer.json` allows in `require.php` (for `^8.2` that is PHP 8.2). Without a PHP requirement the PHP version that runs Rector is used,
 - in TYPO3 projects: uses the TYPO3 sets up to the lowest TYPO3 version that your `composer.json` allows in `require.typo3/cms-core`, plus the TYPO3 `CODE_QUALITY` and `GENERAL` sets. TYPO3 10 to 14 are supported, `dev-main` counts as 14,
-- skips the rules from [`RectorSettings::skip()`](#rectorsettingsskip).
+- skips the [rules below](#skipped-rules).
 
 The file belongs to your project. Call more methods of the builder after `apply()`:
 
 - `withSkip()`, `withSets()` and `withRules()` add to the configuration.
 - `withPaths()` and `withCache()` replace it.
-- `withPhpSets()` can only be called once. To use your own PHP version, call `RectorSettings::apply(RectorConfig::configure(), phpSets: false)` and then `withPhpSets(php83: true)`.
-- `RectorSettings::apply(RectorConfig::configure(), typo3: false)` leaves out the TYPO3 sets.
+- `withPhpSets()` can only be called once. To use your own PHP version, call `RectorSettings::apply(phpSets: false)` and then `withPhpSets(php83: true)`.
+- `RectorSettings::apply(typo3: false)` leaves out the TYPO3 sets.
 
-### Older `rector.php` files
+### Skipped rules
 
-Older `rector.php` files configure Rector with `RectorSettings::sets()` and `RectorSettings::skip()` and keep working in version 12. `sets()` returns the prepared sets above, `SetList::PHP_VERSION_BASED_SET` and the TYPO3 sets; `sets(false)` is no longer supported and triggers a deprecation, the sets always contain all upgrades. To switch to `apply()`, replace your `rector.php` with the [template](rector.php) and move your own skips, sets and rules into it.
-
-### `RectorSettings::skip()`
-
-Skips rules that change code in ways we do not want:
+`RectorSettings::apply()` skips rules that change code in ways we do not want:
 
 | Rule | Reason |
 | --- | --- |
@@ -262,15 +270,22 @@ In TYPO3 projects it also skips:
 - name importing in `ClassAliasMap.php`,
 - `declare(strict_types=1)` in `ext_emconf.php`.
 
-Skip entries for rules that no longer exist in the installed Rector version, or that Rector marks as deprecated, are removed automatically. This keeps the configuration working across Rector versions.
+### Older configuration files
 
-### `RectorSettings::getLevel(int $level = 9999)`
+Older `rector.php` and `fractor.php` files build the configuration from the methods below. They keep working in version 12, but they are marked as `@deprecated` and will be removed in version 13, so PHPStan reports these calls (see [PHPStan](#phpstan)):
 
-Deprecated, it will be removed in version 13. Rector has its own levels, e.g. `withTypeCoverageLevel()`. Helper for introducing Rector step by step. It returns the number given with `--level=N` on the Rector command line, or `$level` if there is none. It removes the option from the arguments, so Rector does not reject it, and passes the value to Rector's parallel worker processes through the environment variable `RECTOR_CLI_OPTION_LEVEL`. Use the return value in your `rector.php` wherever Rector expects a level.
+| Method | Returns |
+| --- | --- |
+| `RectorSettings::sets()` | The prepared sets above, `SetList::PHP_VERSION_BASED_SET` and the TYPO3 sets |
+| `RectorSettings::skip()` | The [skipped rules](#skipped-rules) |
+| `RectorSettings::setsTypo3()`, `RectorSettings::skipTypo3()` | Empty arrays, the TYPO3 sets and skips are part of `sets()` and `skip()` |
+| `FractorSettings::sets()` | The TYPO3 set |
+| `FractorSettings::rules()` | The rule for projects without TYPO3 |
+| `FractorSettings::options()` | The TypoScript options |
 
-### Deprecated methods
+`RectorSettings::sets(false)` and `FractorSettings::sets(false)` are no longer supported and also trigger a deprecation at runtime, the sets always contain all upgrades.
 
-`RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` return empty arrays. The TYPO3 sets and skips are part of `sets()` and `skip()` now. Older `rector.php` files may still call them; you can remove these calls. Both are marked as `@deprecated`, so PHPStan reports these calls (see [PHPStan](#phpstan)).
+To switch to `apply()`, replace your `rector.php` and `fractor.php` with the templates ([`rector.php`](rector.php), [`fractor.php`](fractor.php)) and move your own skips, sets and rules into them. Without changes of your own, [delete them and add them to `.gitignore`](#using-the-templates-unchanged).
 
 ### Introducing Rector in large projects
 
@@ -284,14 +299,14 @@ vendor/bin/rector-p
 
 [Fractor](https://github.com/andreaswolf/fractor) refactors non-PHP files in TYPO3 projects, such as TypoScript, FlexForms and YAML. The generated `fractor.php`
 
-- calls `FractorSettings::apply()` with the Fractor configuration builder and returns it, like `rector.php`,
+- calls `FractorSettings::apply()` and returns the Fractor configuration builder, like `rector.php`; to configure a builder of your own, pass it to `apply()`,
 - checks all files that are tracked in git,
-- uses the TYPO3 sets up to the lowest TYPO3 version that your `composer.json` allows (`FractorSettings::sets()`),
-- formats TypoScript with 2 spaces, indented conditions and conditions closed with `[end]` (`FractorSettings::options()`).
+- uses the TYPO3 sets up to the lowest TYPO3 version that your `composer.json` allows,
+- formats TypoScript with 2 spaces, indented conditions and conditions closed with `[end]`.
 
-Call more methods of the builder after `apply()`, e.g. `withSkip()`. `withOptions()` replaces the options of `apply()`. Older `fractor.php` files with `FractorSettings::sets(true)` keep working.
+Call more methods of the builder after `apply()`, e.g. `withSkip()`. `withOptions()` replaces the options of `apply()`. Older `fractor.php` files keep working, see [Older configuration files](#older-configuration-files).
 
-In projects without TYPO3 there are no sets. Because Fractor needs at least one rule, `FractorSettings::rules()` then adds a single TypoScript rule, which has no effect on projects without TypoScript.
+In projects without TYPO3 there are no sets. Because Fractor needs at least one rule, `apply()` then adds a single TypoScript rule, which has no effect on projects without TypoScript.
 
 ## PHPStan
 
@@ -343,7 +358,7 @@ composer update pluswerk/grumphp-config --with-all-dependencies
 
 - Changes to the shared `grumphp.yml` take effect immediately.
 - New `convention.*` parameters are added to your `grumphp.yml` automatically.
-- `rector.php`, `fractor.php`, `phpstan.neon` and `phpstan-baseline.neon` are not updated, because they belong to your project. To get the current templates, delete the files and run `composer update` again; then move your own changes back into the new files and regenerate the baseline.
+- `rector.php`, `fractor.php`, `phpstan.neon` and `phpstan-baseline.neon` are not updated, because they belong to your project. To get the current templates, delete the files and run `composer update` again; then move your own changes back into the new files and regenerate the baseline. `rector.php` and `fractor.php` without changes of your own can stay out of git, see [Using the templates unchanged](#using-the-templates-unchanged).
 
 ### From 11 to 12
 
@@ -354,7 +369,7 @@ composer require --dev pluswerk/grumphp-config:^12.0.0 --with-all-dependencies
 - Version 12 installs [`phpstan/phpstan-deprecation-rules`](#phpstan), so PHPStan reports the use of deprecated code.
 - Version 12 installs [`spaze/phpstan-disallowed-calls`](#phpstan) with a list of debug functions, so PHPStan reports calls like `var_dump()` or `DebuggerUtility::var_dump()`.
 - Version 12 installs [`phpstan/phpstan-phpunit`](#phpstan), so PHPStan understands PHPUnit tests better and checks some assertions.
-- Remove the calls of `RectorSettings::setsTypo3()` and `RectorSettings::skipTypo3()` from your `rector.php`, see [Deprecated methods](#deprecated-methods).
+- Switch your `rector.php` and `fractor.php` to `apply()`, see [Older configuration files](#older-configuration-files).
 - Fix the other findings, or add them to `phpstan-baseline.neon` with `vendor/bin/phpstan analyse --generate-baseline`.
 
 ## Packages in this repository
