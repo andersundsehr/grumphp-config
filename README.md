@@ -129,6 +129,38 @@ Some tasks can fix what they find: `composer_normalize`, `phpcs` (with `phpcbf`)
 
 The git hooks detect [DDEV](https://ddev.com/). If you commit on the host, the project has a `.ddev` folder and `ddev` is installed, the hook runs GrumPHP inside the web container (`ddev exec FORCE_COLOR=1 php vendor/bin/grumphp …`). This way the checks use the PHP version and extensions of the container. Inside the container, and in projects without DDEV, the hook calls `php` directly.
 
+#### Git worktrees
+
+DDEV mounts only the main worktree of the project, at `/var/www/html`. A linked git worktree inside the main worktree, e.g. `.claude/worktrees/feature`, is in a subdirectory there. When you commit in such a worktree, the hook runs GrumPHP in this subdirectory and gives git and GrumPHP the paths in the container:
+
+```bash
+ddev exec --dir /var/www/html/.claude/worktrees/feature \
+  GIT_DIR=/var/www/html/.git/worktrees/feature \
+  GIT_WORK_TREE=/var/www/html/.claude/worktrees/feature \
+  GRUMPHP_GIT_REPOSITORY_DIR=/var/www/html/.git/worktrees/feature \
+  FORCE_COLOR=1 php vendor/bin/grumphp …
+```
+
+The `.git` file of a linked worktree contains a path on the host, so git in the container needs these variables. The `commit-msg` hook also gives GrumPHP the path of the commit message in the container. If GrumPHP is in a subdirectory of the repository, e.g. `app/`, `--dir` is this subdirectory of the worktree.
+
+Run `composer install` in the worktree before you commit there, because the hook uses `vendor/bin/grumphp` and the tools of the worktree. Give `composer install` the same paths, but the git dir of the main worktree for GrumPHP:
+
+```bash
+ddev exec --dir /var/www/html/.claude/worktrees/feature \
+  GIT_DIR=/var/www/html/.git/worktrees/feature \
+  GIT_WORK_TREE=/var/www/html/.claude/worktrees/feature \
+  GRUMPHP_GIT_REPOSITORY_DIR=/var/www/html/.git \
+  composer install
+```
+
+All worktrees use the hooks in `.git/hooks` of the main worktree. When `composer install` installs GrumPHP, e.g. in a new worktree, the GrumPHP plugin writes these hooks again. Without these variables, the plugin cannot find the git dir in the container and writes the hooks to a wrong place.
+
+In these cases the hook runs `ddev exec` without the paths of the worktree, as in the main worktree:
+
+- The path of the worktree in the main worktree or the subdirectory of GrumPHP contains other characters than letters, digits and `. _ / + @ , -`, e.g. a space. The hook splits the command into words, and bash in the container reads the words again. DDEV then uses the main worktree, so GrumPHP checks the files of the main worktree and not the files of the worktree.
+- The worktree is outside the main worktree. The container does not contain it. `ddev` stops with an error, because the worktree contains a second DDEV project with the same name.
+- The main worktree has no `.ddev/config.yaml`, e.g. because it is on an old branch.
+
 ## Included tasks
 
 The shared [`grumphp.yml`](grumphp.yml) enables these tasks. All tasks run, even if an earlier one fails (`stop_on_failure: false`). Each task may run for up to 240 seconds.

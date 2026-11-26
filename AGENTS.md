@@ -5,6 +5,7 @@ This repository is a monorepo: the shared GrumPHP configuration in the root and 
 ## Checks
 
 - Run `vendor/bin/grumphp run` in the root and in every package you changed, see [Running the checks](CONTRIBUTING.md#running-the-checks).
+- Run `vendor/bin/phpunit` in the root when you change the `git_hook_variables` in `grumphp.yml`, see [Tests of the root](CONTRIBUTING.md#tests-of-the-root). Every part of the shell code needs a test that fails without it. Before a pull request, also check the hooks once in a linked worktree in DDEV, as described there.
 - Commit subjects use the TYPO3 prefixes `[FEATURE]`, `[BUGFIX]` and `[TASK]`.
 
 ## Rector version and deprecated rules

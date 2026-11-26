@@ -31,6 +31,7 @@ jobs:
       - if: ${{ matrix.typo3 }}
         run: TYPO3_SKIP_ASSET_PUBLISH=true composer req saschaegerer/phpstan-typo3 ssch/typo3-rector "typo3/cms-core:${{ matrix.typo3 }}" --no-progress --no-scripts -n
       - run: ./vendor/bin/grumphp run --ansi
+      - run: ./vendor/bin/phpunit
 
   test-packages:
     name: "${{ matrix.package }} php: ${{ matrix.php }}"
