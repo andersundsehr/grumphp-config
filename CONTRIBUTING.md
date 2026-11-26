@@ -13,7 +13,7 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 | `src/RectorSettings.php`, `src/FractorSettings.php` | Rule sets and skips used by the generated `rector.php` and `fractor.php` |
 | `src/VersionUtility.php` | Reads the lowest PHP and TYPO3 version from the project's `composer.json` |
 | `grumphp.yml` | The shared GrumPHP configuration that projects import; also the configuration for this repository |
-| `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository |
+| `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository. The packages do not commit `rector.php` and `fractor.php`, they get them from the plugin |
 | `phpstan-disallowed-calls.neon` | Debug calls that PHPStan reports in projects (`spaze/phpstan-disallowed-calls`); `extra.phpstan.includes` in `composer.json` lets `phpstan/extension-installer` load it automatically |
 | `phpstan-baseline.neon` | PHPStan baseline of this repository for CI runs with TYPO3 packages; new projects get an empty baseline instead |
 | `phpstan-baseline-without-typo3.neon` | PHPStan baseline of this repository for CI runs without TYPO3 packages |
@@ -174,7 +174,7 @@ For each package, `split.sh`
 
 1. clones `github.com/andersundsehr/<package>` into `tmp/<package>`,
 2. checks out the branch `<major>.x` of the package repository, e.g. `12.x`. Every major version has its own branch there, `main` is no longer used. The major version comes from the `dev-main as <version>` aliases in `require-dev` of the root `composer.json`. A new branch starts at the last `<major>.*` tag, or at the default branch for a new major version,
-3. copies `packages/<package>` into the clone, without files ignored by `.gitignore`,
+3. copies `packages/<package>` into the clone, without files ignored by `.gitignore`, and removes ignored files that are still in the package repository,
 4. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them to that branch,
 5. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
 
@@ -188,7 +188,7 @@ The script sets the global git user only if none is configured. Delete `tmp/` af
 
 ## Adding a package
 
-1. Create `packages/<name>/` with `composer.json`, `README.md`, `LICENSE.txt`, `.gitignore`, `grumphp.yml`, `phpstan.neon`, `phpstan-baseline.neon` and `rector.php`. Copy the `repositories`, `require-dev`, `config`, `extra.branch-alias` and `scripts` sections from an existing package and set `support.source` to the package folder.
+1. Create `packages/<name>/` with `composer.json`, `README.md`, `LICENSE.txt`, `.gitignore`, `grumphp.yml`, `phpstan.neon` and `phpstan-baseline.neon`. Copy the `.gitignore` from an existing package: `rector.php` and `fractor.php` are not committed, the plugin creates them from the templates in the root on `composer install`. Copy the `repositories`, `require-dev`, `config`, `extra.branch-alias` and `scripts` sections from an existing package and set `support.source` to the package folder.
 2. Require the package in the root `composer.json`: in `require` with the current version constraint and in `require-dev` as `dev-main as <version>`.
 3. Add the package to the `rm -rf` lists in `grumphp-run-all.sh`.
 4. Add the package to the `test-packages` and `code-split` matrices in the workflow.

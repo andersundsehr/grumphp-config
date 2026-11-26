@@ -69,6 +69,8 @@ for package in $packages ; do
   git -C tmp/${package}/ checkout -B "${targetBranch}" ${startPoint}
 
   rsync -acv --delete --exclude='.git' --exclude-from=packages/${package}/.gitignore --exclude-from=.gitignore packages/${package}/ tmp/${package}/
+  # rsync does not delete ignored files, remove the ones that are still in the package repository, e.g. rector.php
+  git -C tmp/${package}/ ls-files -z --cached --ignored --exclude-standard | xargs -0 -r git -C tmp/${package}/ rm -q --
   git -C tmp/${package}/ add .
 
   # if there is nothing to commit we can skip the commit and push
