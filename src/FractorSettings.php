@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PLUS\GrumPHPConfig;
 
 use a9f\Fractor\Application\Contract\FractorRule;
+use a9f\Fractor\Configuration\FractorConfiguration;
 use a9f\Fractor\Configuration\FractorConfigurationBuilder;
 use a9f\Typo3Fractor\Set\Typo3LevelSetList;
 use a9f\FractorTypoScript\Configuration\TypoScriptProcessorOption;
@@ -23,18 +24,20 @@ final class FractorSettings
     /**
      * Applies the shared configuration to the Fractor configuration of the project:
      *
-     * return FractorSettings::apply(FractorConfiguration::configure())
+     * return FractorSettings::apply()
      *     ->withSkip([__DIR__ . '/Resources/Private/Legacy']);
      *
      * withOptions() of the project replaces the options set here.
+     *
+     * @param FractorConfigurationBuilder|null $fractorConfig the builder to configure, default: FractorConfiguration::configure()
      */
-    public static function apply(FractorConfigurationBuilder $fractorConfig): FractorConfigurationBuilder
+    public static function apply(?FractorConfigurationBuilder $fractorConfig = null): FractorConfigurationBuilder
     {
-        return $fractorConfig
+        return ($fractorConfig ?? FractorConfiguration::configure())
             ->withPaths(self::gitFiles())
-            ->withSets(self::sets())
-            ->withRules(self::rules())
-            ->withOptions(self::options());
+            ->withSets(self::internalSets())
+            ->withRules(self::internalRules())
+            ->withOptions(self::internalOptions());
     }
 
     /**
@@ -46,10 +49,11 @@ final class FractorSettings
     }
 
     /**
-     * The TYPO3 set with all upgrades up to the lowest TYPO3 version of the project.
+     * The TYPO3 set with all upgrades up to the lowest TYPO3 version of the project, for older fractor.php files.
      *
      * @param bool $entirety no longer supported: the set always contains all upgrades up to the version
      * @return array<int, string>
+     * @deprecated will be removed in version 13, use FractorSettings::apply()
      */
     public static function sets(bool $entirety = true): array
     {
@@ -57,6 +61,14 @@ final class FractorSettings
             trigger_error('FractorSettings::sets(false) is no longer supported, the set contains all upgrades up to the version', E_USER_DEPRECATED);
         }
 
+        return self::internalSets();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function internalSets(): array
+    {
         $setList = null;
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {
@@ -91,9 +103,20 @@ final class FractorSettings
     }
 
     /**
+     * The TypoScript options for older fractor.php files.
+     *
      * @return array<string, bool|PrettyPrinterConditionTermination|int|string>
+     * @deprecated will be removed in version 13, use FractorSettings::apply()
      */
     public static function options(): array
+    {
+        return self::internalOptions();
+    }
+
+    /**
+     * @return array<string, bool|PrettyPrinterConditionTermination|int|string>
+     */
+    private static function internalOptions(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {
@@ -113,9 +136,20 @@ final class FractorSettings
     }
 
     /**
+     * The rules for older fractor.php files.
+     *
      * @return array<class-string<FractorRule>>
+     * @deprecated will be removed in version 13, use FractorSettings::apply()
      */
     public static function rules(): array
+    {
+        return self::internalRules();
+    }
+
+    /**
+     * @return array<class-string<FractorRule>>
+     */
+    private static function internalRules(): array
     {
         $minimalTypo3Version = VersionUtility::getMinimalTypo3Version();
         if (!$minimalTypo3Version) {

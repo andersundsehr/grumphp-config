@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace PLUS\GrumPHPConfig;
 
 use Composer\InstalledVersions;
-use InvalidArgumentException;
 use Rector\CodeQuality\Rector\If_\ArrayExplicitBoolCompareRector;
 use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
-use Rector\Configuration\Deprecation\Contract\DeprecatedInterface;
+use Rector\Config\RectorConfig;
 use Rector\Configuration\RectorConfigBuilder;
 use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\PostRector\Rector\NameImportingPostRector;
@@ -25,7 +24,6 @@ use function array_values;
 use function assert;
 use function explode;
 use function is_string;
-use function putenv;
 use function shell_exec;
 use function trigger_error;
 
@@ -34,14 +32,16 @@ final class RectorSettings
     /**
      * Applies the shared configuration to the Rector configuration of the project:
      *
-     * return RectorSettings::apply(RectorConfig::configure())
+     * return RectorSettings::apply()
      *     ->withSkip([__DIR__ . '/src/Legacy']);
      *
+     * @param RectorConfigBuilder|null $rectorConfig the builder to configure, default: RectorConfig::configure()
      * @param bool $phpSets false: no PHP upgrade sets, e.g. to call withPhpSets() with your own version
      * @param bool $typo3 false: no TYPO3 sets, even if typo3/cms-core is installed
      */
-    public static function apply(RectorConfigBuilder $rectorConfig, bool $phpSets = true, bool $typo3 = true): RectorConfigBuilder
+    public static function apply(?RectorConfigBuilder $rectorConfig = null, bool $phpSets = true, bool $typo3 = true): RectorConfigBuilder
     {
+        $rectorConfig ??= RectorConfig::configure();
         $rectorConfig
             ->withParallel()
             ->withImportNames()
@@ -54,7 +54,7 @@ final class RectorSettings
                 typeDeclarations: true,
                 privatization: true,
             )
-            ->withSkip(self::skip());
+            ->withSkip(self::internalSkip());
 
         if ($phpSets) {
             if (VersionUtility::getMinimalPhpVersion() !== null) {
@@ -88,41 +88,14 @@ final class RectorSettings
     }
 
     /**
-     * @deprecated will be removed in version 13. Rector has its own levels, e.g. withTypeCoverageLevel().
-     */
-    public static function getLevel(int $level = 9999): int
-    {
-        if (isset($_ENV['RECTOR_CLI_OPTION_LEVEL'])) {
-            return (int)$_ENV['RECTOR_CLI_OPTION_LEVEL'];
-        }
-
-        foreach ($_SERVER['argv'] as $arg) {
-            if (str_starts_with((string)$arg, '--level=')) {
-                $cliLevel = (int)(substr((string)$arg, 8));
-                if ($cliLevel < 0) {
-                    throw new InvalidArgumentException('Level must be bigger than 0', 1791530001);
-                }
-
-                //filter out argument so rector does not complain
-                $_SERVER['argv'] = array_filter($_SERVER['argv'], fn($v): bool => $v !== $arg);
-                //set environment variable so it can be used in child runs
-                $_ENV['RECTOR_CLI_OPTION_LEVEL'] = $cliLevel;
-                putenv('RECTOR_CLI_OPTION_LEVEL=' . $cliLevel);
-                return $cliLevel;
-            }
-        }
-
-        return $level;
-    }
-
-    /**
-     * The sets for rector.php files with $rectorConfig->sets(), use apply() for new files.
+     * The sets for older rector.php files with $rectorConfig->sets().
      *
      * The PHP rules come from SetList::PHP_VERSION_BASED_SET, Rector applies the ones up to the PHP version
      * from require.php in composer.json, or the PHP version that runs Rector.
      *
      * @param bool $entirety no longer supported: the sets always contain all upgrades up to the versions
      * @return array<int,string>
+     * @deprecated will be removed in version 13, use RectorSettings::apply()
      */
     public static function sets(bool $entirety = true): array
     {
@@ -200,11 +173,22 @@ final class RectorSettings
     }
 
     /**
-     * @return array<string|string[]>
+     * The skips for older rector.php files with $rectorConfig->skip().
+     *
+     * @return array<int|string, list<string>|string>
+     * @deprecated will be removed in version 13, use RectorSettings::apply()
      */
     public static function skip(): array
     {
-        return self::filterOutDeprecatedClasses([
+        return self::internalSkip();
+    }
+
+    /**
+     * @return array<int|string, list<string>|string>
+     */
+    private static function internalSkip(): array
+    {
+        return [
             /**
              * Keep nullable object checks unchanged:
              * FROM: if ($dateTime === null) {, if ($object) {, if ($someClass && $someClass->someMethod()) {
@@ -232,7 +216,7 @@ final class RectorSettings
             IssetOnPropertyObjectToPropertyExistsRector::class,
 
             ...self::internalSkipTypo3(),
-        ]);
+        ];
     }
 
     /**
@@ -268,35 +252,5 @@ final class RectorSettings
                 getcwd() . '/ext_emconf.php',
             ],
         ];
-    }
-
-    /**
-     * @param array<int|string, list<string>|string> $skips
-     * @return array<int|string, list<string>|string>
-     */
-    private static function filterOutDeprecatedClasses(array $skips): array
-    {
-        foreach ($skips as $key => $value) {
-            $class = $key;
-            if (is_string($value)) {
-                $class = $value;
-            }
-
-            if (!is_string($class)) {
-                throw new InvalidArgumentException('Class name must be a string ' . json_encode([$key => $value]), 1791530002);
-            }
-
-            if (!class_exists($class)) {
-                unset($skips[$key]);
-                continue;
-            }
-
-            if (is_a($class, DeprecatedInterface::class, true)) {
-                unset($skips[$key]);
-                continue;
-            }
-        }
-
-        return $skips;
     }
 }
