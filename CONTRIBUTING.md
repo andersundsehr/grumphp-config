@@ -13,7 +13,8 @@ Please open issues and pull requests in [andersundsehr/grumphp-config](https://g
 | `src/RectorSettings.php`, `src/FractorSettings.php` | Rule sets and skips used by the generated `rector.php` and `fractor.php` |
 | `src/VersionUtility.php` | Reads the lowest PHP and TYPO3 version from the project's `composer.json` |
 | `grumphp.yml` | The shared GrumPHP configuration that projects import; also the configuration for this repository |
-| `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository |
+| `rector.php`, `fractor.php`, `phpstan.neon` | Templates that the plugin copies into projects; also the configuration for this repository. The packages do not commit `rector.php` and `fractor.php`, they get them from the plugin |
+| `phpstan-disallowed-calls.neon` | Debug calls that PHPStan reports in projects (`spaze/phpstan-disallowed-calls`); `extra.phpstan.includes` in `composer.json` lets `phpstan/extension-installer` load it automatically |
 | `phpstan-baseline.neon` | PHPStan baseline of this repository for CI runs with TYPO3 packages; new projects get an empty baseline instead |
 | `phpstan-baseline-without-typo3.neon` | PHPStan baseline of this repository for CI runs without TYPO3 packages |
 | `.gitattributes` | Files that are not part of the Composer package (`export-ignore`), e.g. `packages/`, the baselines and the scripts |
@@ -59,10 +60,10 @@ The repository also contains a `docker-compose.yml` with the `ghcr.io/pluswerk/p
 
 ## How the packages are wired
 
-- The root `composer.json` has a `path` repository for `packages/*`. It requires the packages with `^11.0.0` and, in `require-dev`, with `dev-main as 11.0.0`, so the root always uses the local package code.
+- The root `composer.json` has a `path` repository for `packages/*`. It requires the packages with `^12.0.0` and, in `require-dev`, with `dev-main as 12.0.0`, so the root always uses the local package code.
 - Each package has its own `composer.json` with two `path` repositories: `../../` for `pluswerk/grumphp-config` and `../*` for the other packages. `pluswerk/grumphp-config` is copied into the package's `vendor/` (`"symlink": false`), so every package is checked with the current configuration from the root.
 - After `composer update` in a package, its `post-update-cmd` scripts run `composer bump -D`, `composer normalize` and remove `vendor/pluswerk/grumphp-config/vendor` and `vendor/pluswerk/grumphp-config/packages` from the copy.
-- All packages share one version number. `extra.branch-alias` maps `dev-main` to the current major version (`11.0.x-dev` or `11.0-dev`).
+- All packages share one version number. `extra.branch-alias` maps `dev-main` to the current major version (`12.0.x-dev` or `12.0-dev`).
 
 ## Running the checks
 
@@ -113,6 +114,13 @@ Everything:
 
 The script refreshes the copy of the root configuration in every package with `rsync`, runs `composer update` and `vendor/bin/grumphp run` in every package and finally in the root. It stops at the first failure.
 
+### PHPStan configuration of the projects
+
+There are two ways to bring PHPStan configuration into the projects:
+
+- `extra.phpstan.includes` in `composer.json` (like `phpstan-disallowed-calls.neon`): `phpstan/extension-installer` loads it in every project, also in existing ones after the next update. PHPStan loads it before the `phpstan.neon` of the project, so the project can add to it or replace parameters with `!`. Use it for rules that should apply everywhere.
+- The template `phpstan.neon`: the plugin copies it only if the project has none, so changes reach only new projects. Use it for settings the project owns. `level` and `paths` must be here: PHPStan reads them only from the project config and its includes, so `andersundsehr/phpstan-git-files` (it sets `paths`) is included here and can not move to `extra.phpstan`. A file that is included both ways stops PHPStan with "This file is included multiple times".
+
 ### PHPStan baselines
 
 CI checks the root in two variants:
@@ -148,7 +156,7 @@ Rector removes deprecated classes, constants and rules in minor releases. For ex
 
 - `composer.json` and `packages/rector-p/composer.json` require Rector with a caret constraint (`^2.8.0`).
 - The grumphp workflow also runs every night. There is no `composer.lock`, so it installs the newest Rector and shows when a new version breaks this repository, with and without TYPO3.
-- `phpstan/phpstan-deprecation-rules` reports deprecated Rector classes and constants that this repository uses, before Rector removes them. It does not see constants read with `constant()`, and it does not check other packages such as `ssch/typo3-rector`.
+- `phpstan/phpstan-deprecation-rules` reports deprecated Rector classes and constants that this repository uses, before Rector removes them. It does not check other packages such as `ssch/typo3-rector`.
 - If a new Rector version breaks something that can not be fixed here, report it to the package that has to fix it. Example: `ssch/typo3-rector` 3.17.0 uses `Rector\Transform\ValueObject\MethodCallToStaticCall`, which Rector 2.9.0 removed (sabbelasichon/typo3-rector#4957, fix in sabbelasichon/typo3-rector#4958).
 
 ## Releases
@@ -157,18 +165,25 @@ Rector removes deprecated classes, constants and rules in minor releases. For ex
 2. Create a GitHub release in this repository with a new tag. Tags have no prefix, e.g. `11.2.1`. Use semantic versioning: a new major version for breaking changes.
 3. The tag push starts CI. After the tests, the `code-split` job publishes every package and releases it with the same version.
 
-Older major versions are maintained on branches such as `10.x`.
+Older major versions are maintained on branches such as `11.x`. A new major version needs:
+
+1. the new version in the root `composer.json` (`^12.0.0`, `dev-main as 12.0.0`) and in `extra.branch-alias` of every package,
+2. before its first release: the branch `<major>.x` in every package repository, created by hand from the newest commit of the previous major version, and set as the default branch there. `split.sh` pushes only when the package changed, so it does not create the branch on its own,
+3. a maintenance branch `<previous major>.x` in this repository, if the previous major version still gets releases.
+
+Every maintenance branch with `split.sh` (`10.x` and newer) needs the branch handling described below. The `code-split` job runs `split.sh` from the tagged commit, so a fix of the script has to be ported to every maintenance branch that still gets releases.
 
 ### What `split.sh` does
 
 For each package, `split.sh`
 
 1. clones `github.com/andersundsehr/<package>` into `tmp/<package>`,
-2. copies `packages/<package>` into the clone, without files ignored by `.gitignore`,
-3. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them,
-4. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
+2. checks out the branch `<major>.x` of the package repository, e.g. `12.x`. Every major version has its own branch there, `main` is no longer used. The major version comes from the `dev-main as <version>` aliases in `require-dev` of the root `composer.json`. A new branch starts at the last `<major>.*` tag, or at the default branch for a new major version,
+3. copies `packages/<package>` into the clone, without files ignored by `.gitignore`, and removes ignored files that are still in the package repository,
+4. commits the changes with the subject, author and date of the current monorepo commit and a link to it, and pushes them to that branch,
+5. if the current monorepo commit has a tag and the package commit has none yet: tags the package commit with the same name, pushes the tag and creates a GitHub release for it.
 
-The script needs the GitHub CLI `gh` and a token with write access to the package repositories in `GH_TOKEN`. In CI the token comes from the secret `ACCESS_TOKEN` of the `code split` environment. Locally you can split a single package:
+The script needs the GitHub CLI `gh`, `jq` and a token with write access to the package repositories in `GH_TOKEN`. In CI the token comes from the secret `ACCESS_TOKEN` of the `code split` environment. Locally you can split a single package:
 
 ```bash
 GH_TOKEN=… ./split.sh rector-p
@@ -178,7 +193,7 @@ The script sets the global git user only if none is configured. Delete `tmp/` af
 
 ## Adding a package
 
-1. Create `packages/<name>/` with `composer.json`, `README.md`, `LICENSE.txt`, `.gitignore`, `grumphp.yml`, `phpstan.neon`, `phpstan-baseline.neon` and `rector.php`. Copy the `repositories`, `require-dev`, `config`, `extra.branch-alias` and `scripts` sections from an existing package and set `support.source` to the package folder.
+1. Create `packages/<name>/` with `composer.json`, `README.md`, `LICENSE.txt`, `.gitignore`, `grumphp.yml`, `phpstan.neon` and `phpstan-baseline.neon`. Copy the `.gitignore` from an existing package: `rector.php` and `fractor.php` are not committed, the plugin creates them from the templates in the root on `composer install`. Copy the `repositories`, `require-dev`, `config`, `extra.branch-alias` and `scripts` sections from an existing package and set `support.source` to the package folder.
 2. Require the package in the root `composer.json`: in `require` with the current version constraint and in `require-dev` as `dev-main as <version>`.
 3. Add the package to the `rm -rf` lists in `grumphp-run-all.sh`.
 4. Add the package to the `test-packages` and `code-split` matrices in the workflow.

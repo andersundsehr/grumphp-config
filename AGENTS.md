@@ -10,8 +10,15 @@ This repository is a monorepo: the shared GrumPHP configuration in the root and 
 ## Rector version and deprecated rules
 
 - Rector removes deprecated code in minor releases. `composer.json` and `packages/rector-p/composer.json` require it with a caret constraint (`^2.8.0`); the nightly CI shows when a new version breaks something. Fix it here, or report it to the package that has to fix it. See [Rector version](CONTRIBUTING.md#rector-version).
-- `phpstan/phpstan-deprecation-rules` reports the use of deprecated Rector classes, e.g. rules in `RectorSettings::skip()`. Fix these findings, do not put them into the baseline.
-- When you remove a rule from `RectorSettings::skip()` because Rector deprecated it, raise the minimum Rector version in both `composer.json` files to the first version in which the rule is deprecated. `filterOutDeprecatedClasses()` already drops deprecated rules, so the skip entry was only needed for older versions; with the raised minimum they can no longer be installed. If Rector names a replacement rule, skip the replacement and make sure the minimum version contains it. Example: `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector` and `ObjectExplicitBoolCompareRector` are deprecated since Rector 2.8.0, which also brings their replacement `ExplicitNullableObjectInstanceRector`, so the constraint is at least `^2.8.0`.
+- `phpstan/phpstan-deprecation-rules` reports the use of deprecated Rector classes, e.g. rules in the skips of `RectorSettings` (`internalSkip()`). Fix these findings, do not put them into the baseline.
+- When you remove a rule from the skips because Rector deprecated it, raise the minimum Rector version in both `composer.json` files to the first version in which the rule is deprecated. The skips are not filtered by the installed Rector version, so every skipped rule must exist in the supported versions. If Rector names a replacement rule, skip the replacement and make sure the minimum version contains it. Example: `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector` and `ObjectExplicitBoolCompareRector` are deprecated since Rector 2.8.0, which also brings their replacement `ExplicitNullableObjectInstanceRector`, so the constraint is at least `^2.8.0`.
+
+## Package repositories and major versions
+
+- The package repositories `github.com/andersundsehr/<package>` have one branch per major version (`10.x`, `11.x`, `12.x`, …) and no `main`. Their default branch is the newest major version.
+- `split.sh` pushes to `<major>.x`, the major version comes from the `dev-main as <version>` aliases in the root `composer.json`. It pushes only when the package changed, so it does not create a new branch on its own.
+- For a new major version, create `<major>.x` by hand in every package repository before the first release and make it the default branch there. See [Releases](CONTRIBUTING.md#releases).
+- `split.sh` runs from the tagged commit: port a change of the script to every maintenance branch (`10.x`, `11.x`, …) that still gets releases.
 
 ## Tests and mutation testing in rector-p
 

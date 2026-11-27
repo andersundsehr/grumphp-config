@@ -4,3 +4,6 @@ cache-*.json
 tmp-*/
 var/
 composer.lock
+# created by pluswerk/grumphp-config on composer install, see "Using the template unchanged" in its README
+/rector.php
+/fractor.php

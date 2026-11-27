@@ -9,6 +9,13 @@ then
     exit 1
 fi
 
+# check if jq is installed
+if ! command -v jq &> /dev/null
+then
+    echo -e "\033[31m[ERROR] jq is not installed\033[0m"
+    exit 1
+fi
+
 #check if GH_TOKEN is set
 if [ -z "${GH_TOKEN}" ]; then
   echo -e "\033[31m[ERROR] GH_TOKEN is not set\033[0m"
@@ -43,22 +50,38 @@ function printToSummary() {
 git config --global user.email || git config --global user.email "m.vogel@andersundsehr.com"
 git config --global user.name || git config --global user.name "Automated Splitter"
 
+# every major version has its own branch in the package repositories, e.g. 12.x
+# the major version comes from the root composer.json, e.g. "dev-main as 12.0.0" -> 12
+sourceMajor=$(jq -r '[(."require-dev" // {})[] | strings | select(startswith("dev-main as ")) | ltrimstr("dev-main as ") | split(".")[0]][0] // empty' composer.json)
+if [ -z "${sourceMajor}" ]; then
+  echo -e "\033[31m[ERROR] no \"dev-main as <version>\" in require-dev of composer.json\033[0m"
+  exit 1
+fi
+targetBranch="${sourceMajor}.x"
+
 for package in $packages ; do
   echo -e "\033[36m[INFO] ${package} started\033[0m"
   rm -rf tmp/${package}/
   git clone https://${GH_TOKEN}@github.com/andersundsehr/${package}.git tmp/${package}/
+
+  # a new branch starts at the last tag of its major version, or at the default branch for a new major version
+  startPoint=$(git -C tmp/${package}/ rev-parse --verify --quiet "refs/remotes/origin/${targetBranch}" || git -C tmp/${package}/ tag --list "${sourceMajor}.*" --sort=-v:refname | sed -n 1p)
+  git -C tmp/${package}/ checkout -B "${targetBranch}" ${startPoint}
+
   rsync -acv --delete --exclude='.git' --exclude-from=packages/${package}/.gitignore --exclude-from=.gitignore packages/${package}/ tmp/${package}/
+  # rsync does not delete ignored files, remove the ones that are still in the package repository, e.g. rector.php
+  git -C tmp/${package}/ ls-files -z --cached --ignored --exclude-standard | xargs -0 -r git -C tmp/${package}/ rm -q --
   git -C tmp/${package}/ add .
 
   # if there is nothing to commit we can skip the commit and push
   if [ -z "$(git -C tmp/${package}/ status --porcelain)" ]; then
     # color yellow
-    printToSummary "🟡 Nothing to commit for \`${package}\` https://github.com/andersundsehr/${package}"
+    printToSummary "🟡 Nothing to commit for \`${package}\` (${targetBranch}) https://github.com/andersundsehr/${package}"
   else
   git -C tmp/${package}/ commit -m "${commitMessage}"
 
-  git -C tmp/${package}/ push --follow-tags
-    printToSummary "✅ Pushed to remote \`${package}\` https://github.com/andersundsehr/${package}"
+  git -C tmp/${package}/ push --follow-tags origin "HEAD:refs/heads/${targetBranch}"
+    printToSummary "✅ Pushed to remote \`${package}\` (${targetBranch}) https://github.com/andersundsehr/${package}/tree/${targetBranch}"
   fi
 
   currentMonoRepoTag=$(git tag --points-at HEAD)
