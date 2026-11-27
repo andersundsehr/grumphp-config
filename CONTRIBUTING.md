@@ -152,7 +152,12 @@ Commit subjects use the TYPO3 prefixes `[FEATURE]`, `[BUGFIX]` and `[TASK]`. The
 
 ## Rector version
 
-Rector removes deprecated classes, constants and rules in minor releases. For example, Rector 2.9.0 removed `SetList::PHP_*` and rules that `ssch/typo3-rector` still used. So `composer.json` and `packages/rector-p/composer.json` allow only one minor version of Rector, with a tilde constraint such as `~2.8.0`. Treat a new minor version of Rector as a breaking change: raise the constraint in its own pull request and check it with and without TYPO3.
+Rector removes deprecated classes, constants and rules in minor releases. For example, Rector 2.9.0 removed `SetList::PHP_*` and rules that `ssch/typo3-rector` still used.
+
+- `composer.json` and `packages/rector-p/composer.json` require Rector with a caret constraint (`^2.8.0`).
+- The grumphp workflow also runs every night. There is no `composer.lock`, so it installs the newest Rector and shows when a new version breaks this repository, with and without TYPO3.
+- `phpstan/phpstan-deprecation-rules` reports deprecated Rector classes and constants that this repository uses, before Rector removes them. It does not check other packages such as `ssch/typo3-rector`.
+- If a new Rector version breaks something that can not be fixed here, report it to the package that has to fix it. Example: `ssch/typo3-rector` 3.17.0 uses `Rector\Transform\ValueObject\MethodCallToStaticCall`, which Rector 2.9.0 removed (sabbelasichon/typo3-rector#4957, fix in sabbelasichon/typo3-rector#4958).
 
 ## Releases
 

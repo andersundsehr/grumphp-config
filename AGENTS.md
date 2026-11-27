@@ -9,9 +9,9 @@ This repository is a monorepo: the shared GrumPHP configuration in the root and 
 
 ## Rector version and deprecated rules
 
-- `composer.json` and `packages/rector-p/composer.json` allow only one minor version of Rector with a tilde constraint (e.g. `~2.8.0`), because Rector removes deprecated code in minor releases. See [Rector version](CONTRIBUTING.md#rector-version).
+- Rector removes deprecated code in minor releases. `composer.json` and `packages/rector-p/composer.json` require it with a caret constraint (`^2.8.0`); the nightly CI shows when a new version breaks something. Fix it here, or report it to the package that has to fix it. See [Rector version](CONTRIBUTING.md#rector-version).
 - `phpstan/phpstan-deprecation-rules` reports the use of deprecated Rector classes, e.g. rules in the skips of `RectorSettings` (`internalSkip()`). Fix these findings, do not put them into the baseline.
-- When you remove a rule from the skips because Rector deprecated it, raise the minimum Rector version in both `composer.json` files to the first version in which the rule is deprecated. The skips are not filtered by the installed Rector version, so every skipped rule must exist in the one minor version that the constraint allows. If Rector names a replacement rule, skip the replacement and make sure the minimum version contains it. Example: `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector` and `ObjectExplicitBoolCompareRector` are deprecated since Rector 2.8.0, which also brings their replacement `ExplicitNullableObjectInstanceRector`, so the constraint is at least `~2.8.0`.
+- When you remove a rule from the skips because Rector deprecated it, raise the minimum Rector version in both `composer.json` files to the first version in which the rule is deprecated. The skips are not filtered by the installed Rector version, so every skipped rule must exist in the supported versions. If Rector names a replacement rule, skip the replacement and make sure the minimum version contains it. Example: `FlipTypeControlToUseExclusiveTypeRector`, `BinaryOpNullableToInstanceofRector` and `ObjectExplicitBoolCompareRector` are deprecated since Rector 2.8.0, which also brings their replacement `ExplicitNullableObjectInstanceRector`, so the constraint is at least `^2.8.0`.
 
 ## Package repositories and major versions
 
